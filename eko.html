@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Företagsekonomi — Interaktiv Tentamen</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f1f8e5;
+    --surface: #ffffff;
+    --surface2: #e6f2cc;
+    --border: #b4d87a;
+    --accent: #3d8b1a;
+    --accent2: #286010;
+    --success: #16803a;
+    --danger: #dc2626;
+    --warn: #d97706;
+    --text: #1a3008;
+    --muted: #527035;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; }
+  .mono { font-family: 'Space Mono', monospace; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .btn-primary { background: var(--accent); color: #fff; border: none; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; }
+  .btn-secondary:hover { background: var(--border); }
+  .option-btn { background: var(--surface); border: 2px solid var(--border); color: var(--text); cursor: pointer; transition: all 0.15s; text-align: left; }
+  .option-btn:hover:not(:disabled) { background: var(--surface2); border-color: var(--accent); }
+  .option-btn.selected { background: #d4edbc; border-color: var(--accent); }
+  .option-btn.correct { background: #dcfce7; border-color: var(--success); color: var(--success); }
+  .option-btn.wrong { background: #fee2e2; border-color: var(--danger); color: var(--danger); }
+  .option-btn.reveal-correct { background: #dcfce7; border-color: var(--success); }
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; }
+  .topic-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 4px; display: inline-block; font-family: 'Space Mono', monospace; }
+  .explanation-box { background: var(--surface2); border-left: 4px solid var(--accent); border-radius: 8px; padding: 16px; margin-top: 16px; font-size: 14px; line-height: 1.7; }
+  .sticky-header { position: sticky; top: 0; z-index: 10; background: rgba(241,248,229,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  select { background: var(--surface); border: 2px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-family: 'Syne', sans-serif; }
+  select:focus { outline: none; border-color: var(--accent); }
+  input[type="text"] { background: var(--surface); border: 2px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-family: 'Syne', sans-serif; width: 100%; }
+  input[type="text"]:focus { outline: none; border-color: var(--accent); }
+  .tf-btn { background: var(--surface); border: 2px solid var(--border); cursor: pointer; transition: all 0.15s; }
+  .tf-btn:hover:not(:disabled) { background: var(--surface2); }
+  .tf-btn.selected { background: #d4edbc; border-color: var(--accent); }
+  .tf-btn.correct { background: #dcfce7; border-color: var(--success); color: var(--success); font-weight: 700; }
+  .tf-btn.wrong { background: #fee2e2; border-color: var(--danger); color: var(--danger); font-weight: 700; }
+  /* Structured math explanation components */
+  .math-formula { background: var(--surface); border: 2px solid var(--accent); border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent2); font-weight: 700; }
+  .calc-steps { margin: 10px 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .calc-step { display: flex; align-items: baseline; padding: 7px 14px; border-bottom: 1px solid var(--border); gap: 10px; }
+  .calc-step:last-child { border-bottom: none; }
+  .calc-step:nth-child(even) { background: var(--surface2); }
+  .step-label { color: var(--muted); flex-shrink: 0; font-weight: 700; width: 130px; font-family: 'Space Mono', monospace; font-size: 11px; }
+  .step-eq { flex: 1; color: var(--text); font-family: 'Space Mono', monospace; font-size: 11px; word-break: break-word; }
+  .step-res { font-weight: 700; color: var(--accent2); flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 12px; min-width: 110px; text-align: right; }
+  .answer-box { background: var(--accent); color: #fff; border-radius: 8px; padding: 10px 16px; margin-top: 10px; font-family: 'Space Mono', monospace; font-weight: 700; text-align: center; font-size: 13px; }
+  .tip-box { background: var(--surface2); border-left: 3px solid var(--accent); border-radius: 4px; padding: 8px 12px; margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  /* Scrollable table wrapper for inline question tables */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 6px 0; border-radius: 6px; }
+  /* Mobile tweaks */
+  @media (max-width: 520px) {
+    .step-label { width: 80px; font-size: 10px; }
+    .step-eq    { font-size: 10px; }
+    .step-res   { min-width: 70px; font-size: 10px; }
+    .math-formula { font-size: 10px; overflow-x: auto; }
+    .answer-box   { font-size: 11px; padding: 8px 10px; }
+    .explanation-box { padding: 12px; }
+    #screen-start h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- START SCREEN -->
+<div id="screen-start" class="screen active">
+  <div class="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+    <div class="text-center mb-8 sm:mb-10">
+      <div class="mono text-xs font-bold tracking-widest mb-3" style="color:var(--muted)">JÖNKÖPING UNIVERSITY</div>
+      <h1 class="text-4xl font-extrabold mb-2" style="color:var(--text)">Företagsekonomi</h1>
+      <div class="mono text-sm mb-1" style="color:var(--muted)">Grundkurs — Interaktiv tentaövning</div>
+      <div class="mono text-xs" style="color:var(--muted)">Tentamensdatum: 2026-03-18</div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="rounded-xl p-5 text-center" style="background:var(--surface); border:2px solid var(--border)">
+        <div class="text-3xl font-extrabold" style="color:var(--accent)">21</div>
+        <div class="mono text-xs mt-1" style="color:var(--muted)">FRÅGOR</div>
+      </div>
+      <div class="rounded-xl p-5 text-center" style="background:var(--surface); border:2px solid var(--border)">
+        <div class="text-3xl font-extrabold" style="color:var(--accent)">43</div>
+        <div class="mono text-xs mt-1" style="color:var(--muted)">MAX POÄNG</div>
+      </div>
+      <div class="rounded-xl p-5 text-center" style="background:var(--surface); border:2px solid var(--border)">
+        <div class="text-3xl font-extrabold" style="color:var(--accent)">26</div>
+        <div class="mono text-xs mt-1" style="color:var(--muted)">GODKÄNT (3)</div>
+      </div>
+    </div>
+
+    <div class="rounded-xl p-5 mb-8" style="background:var(--surface); border:2px solid var(--border)">
+      <div class="mono text-xs font-bold mb-3" style="color:var(--muted)">BETYGSGRÄNSER</div>
+      <div class="grid grid-cols-4 gap-2 text-center text-sm">
+        <div class="rounded-lg py-2" style="background:var(--surface2)"><div class="font-bold" style="color:var(--danger)">U</div><div class="mono text-xs" style="color:var(--muted)">0–25 p</div></div>
+        <div class="rounded-lg py-2" style="background:var(--surface2)"><div class="font-bold">3</div><div class="mono text-xs" style="color:var(--muted)">26–33 p</div></div>
+        <div class="rounded-lg py-2" style="background:var(--surface2)"><div class="font-bold">4</div><div class="mono text-xs" style="color:var(--muted)">34–39 p</div></div>
+        <div class="rounded-lg py-2" style="background:var(--surface2)"><div class="font-bold" style="color:var(--success)">5</div><div class="mono text-xs" style="color:var(--muted)">40–43 p</div></div>
+      </div>
+    </div>
+
+    <div class="rounded-xl p-5 mb-8" style="background:var(--surface); border:2px solid var(--border)">
+      <div class="mono text-xs font-bold mb-2" style="color:var(--muted)">POÄNGREGLER</div>
+      <ul class="text-sm space-y-1" style="color:var(--muted)">
+        <li>• Enkla val: +1 rätt, 0 fel — inga minuspoäng</li>
+        <li>• Matchningsfrågor: +1 per korrekt par</li>
+        <li>• Alla frågor utan minuspoäng (enligt tentainstruktioner)</li>
+      </ul>
+    </div>
+
+    <div class="rounded-xl p-4 mb-6" style="background:var(--surface);border:2px solid var(--border)">
+      <div class="mono text-xs font-bold mb-3" style="color:var(--muted)">VÄLJ TENTAMEN</div>
+      <div class="grid gap-2" style="grid-template-columns:1fr 1fr">
+        <button id="exam1-btn" onclick="selectExam(1)" class="btn-primary py-3 rounded-xl font-bold text-sm">Tentamen A (2026-03-18)</button>
+        <button id="exam2-btn" onclick="selectExam(2)" class="btn-secondary py-3 rounded-xl font-bold text-sm">Tentamen B (Övningstenta)</button>
+        <button id="exam3-btn" onclick="selectExam(3)" class="btn-secondary py-3 rounded-xl font-bold text-sm" style="grid-column:1/-1">Tentamen C (2025-06-10)</button>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+      <button onclick="startExam()" class="btn-primary flex-1 py-4 rounded-xl text-base sm:text-lg font-bold">BÖRJA TENTAMEN</button>
+      <button onclick="showReadScreen()" class="btn-secondary flex-1 py-4 rounded-xl text-base sm:text-lg font-bold">LÄSA FRÅGOR</button>
+    </div>
+
+    <div class="text-center mt-8 mono text-xs" style="color:var(--muted)">Kursansvarig: Magnus Vårbrant</div>
+  </div>
+</div>
+
+<!-- READ SCREEN -->
+<div id="screen-read" class="screen">
+  <div class="sticky-header px-4 py-3 flex items-center gap-4">
+    <button onclick="showStart()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-bold">← Tillbaka</button>
+    <span class="font-bold">Alla frågor med svar</span>
+  </div>
+  <div id="read-content" class="max-w-3xl mx-auto px-4 py-8 space-y-8"></div>
+</div>
+
+<!-- EXAM SCREEN -->
+<div id="screen-exam" class="screen">
+  <div class="sticky-header px-4 py-3">
+    <div class="max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+      <div class="mono text-xs font-bold" style="color:var(--muted)">FRÅGA <span id="q-num">1</span>/<span id="q-total">21</span></div>
+      <div class="flex-1 progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="mono text-sm font-bold" style="color:var(--accent)"><span id="live-score">0</span> p</div>
+      <button onclick="showStart()" class="mono text-xs" style="color:var(--muted)">Avbryt</button>
+    </div>
+  </div>
+  <div id="exam-content" class="max-w-2xl mx-auto px-4 py-8"></div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="screen-results" class="screen">
+  <div class="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+    <div id="results-content"></div>
+  </div>
+</div>
+
+<script>
+const topicColors = {
+  'Investering':      '#064e3b',
+  'Kalkylering':      '#1e40af',
+  'Affärsmodell':     '#7c3aed',
+  'Marknadsföring':   '#9d174d',
+  'Budgetering':      '#b45309',
+  'Kostnadsanalys':   '#374151',
+  'Redovisning':      '#065f46',
+  'Företagsformer':   '#4338ca',
+  'Lönsamhet':        '#6b21a8',
+  'Affärsutveckling': '#92400e',
+};
+
+const questions = [
+  {
+    id: 1,
+    topic: 'Investering',
+    type: 'single',
+    question: '<strong>Investeringskalkyl</strong><br><br>Du får följande uppgifter för en investering:<br><ul style="margin:10px 0;padding-left:20px;"><li>Grundinvestering (G): 1 550 000 kr</li><li>Kalkylränta (r): 8 %</li><li>Ekonomisk livslängd (n): 5 år</li><li>Restvärde (R): 250 000 kr</li><li>Bedömda årliga utbetalningar år 1–5: 350 000 kr</li><li>Bedömd årlig inbetalning år 1: 700 000 kr</li><li>Bedömda årliga inbetalningar år 2–5: 750 000 kr</li></ul>Använd <strong>kapitalvärdemetoden</strong> och ange investeringens nuvärde.',
+    options: [
+      'Kapitalvärdet är 284 000 kr',
+      'Kapitalvärdet är 232 000 kr',
+      'Kapitalvärdet är 351 634 kr',
+      'Kapitalvärdet är 170 895 kr',
+      'Kapitalvärdet är 121 000 kr',
+      'Kapitalvärdet är 451 000 kr',
+      'Kapitalvärdet är 422 268 kr',
+      'Kapitalvärdet är 100 000 kr',
+    ],
+    correct: [3],
+    explanation: '<div class="math-formula">KV = &Sigma; NV(kassaflöden) &minus; Grundinvestering (G)</div><div class="calc-steps"><div class="calc-step"><span class="step-label">År 1 netto</span><span class="step-eq">700 000 &minus; 350 000 = 350 000 &times; 0,926</span><span class="step-res">= 324 100 kr</span></div><div class="calc-step"><span class="step-label">År 2&ndash;5 netto</span><span class="step-eq">400 000 &times; (3,993 &minus; 0,926) = 400 000 &times; 3,067</span><span class="step-res">= 1 226 800 kr</span></div><div class="calc-step"><span class="step-label">Restvärde år 5</span><span class="step-eq">250 000 &times; 0,681</span><span class="step-res">= 170 250 kr</span></div><div class="calc-step"><span class="step-label">&Sigma; NV inflöden</span><span class="step-eq">324 100 + 1 226 800 + 170 250</span><span class="step-res">= 1 721 150 kr</span></div><div class="calc-step"><span class="step-label">Kapitalvärde</span><span class="step-eq">1 721 150 &minus; 1 550 000</span><span class="step-res">&asymp; 170 895 kr</span></div></div><div class="answer-box">KV &asymp; 170 895 kr &mdash; Positivt &rarr; Investeringen är lönsam vid 8%</div>'
+  },
+  {
+    id: 2,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Påläggskalkyl — AI Belysning AB</strong><br><br>Företaget använder självkostnadskalkyl enligt påläggsmetoden. Nedan visas en påbörjad kalkyl för armaturen "Upplyst":<br><br><table style="border-collapse:collapse;width:100%;font-size:13px;margin:8px 0"><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Direkt Material</td><td style="padding:4px 8px;border:1px solid var(--border)">X kr</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Direkt Lön</td><td style="padding:4px 8px;border:1px solid var(--border)">200 kr</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Materialomkostnad (10%)</td><td style="padding:4px 8px;border:1px solid var(--border)">10 kr</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Tillverkningsomkostnad (20%)</td><td style="padding:4px 8px;border:1px solid var(--border)">40 kr</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)"><strong>Tillverkningskostnad</strong></td><td style="padding:4px 8px;border:1px solid var(--border)"><strong>Y kr</strong></td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">AFFO-pålägg (5%)</td><td style="padding:4px 8px;border:1px solid var(--border)">Z kr</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)"><strong>Självkostnad</strong></td><td style="padding:4px 8px;border:1px solid var(--border)"><strong>367,50 kr</strong></td></tr></table>Vilket värde skall ersätta <strong>Y</strong>?',
+    options: ['320','390','285','370','485','290','350','380','250','400'],
+    correct: [6],
+    explanation: '<div class="math-formula">Självkostnad = Y &times; 1,05 &nbsp;&rarr;&nbsp; Y = 367,50 &divide; 1,05</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Y (Tillv.kost.)</span><span class="step-eq">367,50 &divide; 1,05</span><span class="step-res">= 350 kr</span></div><div class="calc-step"><span class="step-label">DM (bakvägen)</span><span class="step-eq">MO = 10% av DM &rarr; DM = 10 &divide; 0,10</span><span class="step-res">= 100 kr</span></div><div class="calc-step"><span class="step-label">TO</span><span class="step-eq">20% &times; 200 kr (DL)</span><span class="step-res">= 40 kr</span></div><div class="calc-step"><span class="step-label">Kontroll Y</span><span class="step-eq">100 + 200 + 10 + 40</span><span class="step-res">= 350 kr ✓</span></div><div class="calc-step"><span class="step-label">AFFO</span><span class="step-eq">350 &times; 5%</span><span class="step-res">= 17,50 kr</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">350 + 17,50</span><span class="step-res">= 367,50 kr ✓</span></div></div><div class="answer-box">Y = 350 kr</div>'
+  },
+  {
+    id: 3,
+    topic: 'Affärsmodell',
+    type: 'single',
+    question: '<strong>Business Model Canvas</strong><br><br>Business Model Canvas är ett centralt verktyg för att bearbeta ett företags affärsmodell. Bilden visar duken med dolda benämningar. Frågetecknet sitter i den <strong>vänstra, mellersta positionen</strong> (stor cell till vänster).<br><br>Vilken benämning motsvarar frågetecknet?',
+    options: ['Marknadsföring','Intäktsströmmar','Nyckelresurser','Distribution','Pris till kunderna','Nyckelpartners','Värdeerbjudande','Kundrelationer','Kundsegment'],
+    correct: [5],
+    explanation: '<p style="margin-bottom:8px">Business Model Canvas har <strong>9 standardblock</strong> i ett fast mönster:</p><div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--success)">Vänster yttre</span><span class="step-eq">Nyckelpartners &larr; frågetecknet</span><span class="step-res" style="color:var(--success)">✓</span></div><div class="calc-step"><span class="step-label">Mitten vänster &uarr;</span><span class="step-eq">Nyckelaktiviteter</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Mitten vänster &darr;</span><span class="step-eq">Nyckelresurser</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Centrum</span><span class="step-eq">Värdeerbjudande</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Mitten höger &uarr;</span><span class="step-eq">Kundrelationer</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Mitten höger &darr;</span><span class="step-eq">Kanaler</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Höger yttre</span><span class="step-eq">Kundsegment</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Nedre vänster</span><span class="step-eq">Kostnadsstruktur</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Nedre höger</span><span class="step-eq">Intäktsströmmar</span><span class="step-res"></span></div></div><div class="answer-box">Vänster stora cell = Nyckelpartners</div>'
+  },
+  {
+    id: 4,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Försäljningspris och marginal</strong><br><br>Sittmöbeln Paximo har en kalkylerad självkostnad på <strong>3 497 kr</strong>. Företaget strävar efter en <strong>marginal på 15%</strong> på sina produkter.<br><br>Vilket pris skall sättas för att komma så nära denna marginal som möjligt?',
+    options: ['4 000 kr','5 004 kr','4 114 kr','3 854 kr','3 773 kr','4 255 kr','4 022 kr','4 374 kr','3 999 kr','4 398 kr'],
+    correct: [2],
+    explanation: '<div class="math-formula">Marginal = (Pris &minus; SK) &divide; Pris &nbsp;&rarr;&nbsp; P = SK &divide; (1 &minus; marginal)</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Ekvation</span><span class="step-eq">0,15 = (P &minus; 3 497) &divide; P</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Omforma</span><span class="step-eq">0,85 &times; P = 3 497</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Pris</span><span class="step-eq">3 497 &divide; 0,85</span><span class="step-res">= 4 114 kr</span></div><div class="calc-step"><span class="step-label">Kontroll</span><span class="step-eq">(4 114 &minus; 3 497) &divide; 4 114 = 617 &divide; 4 114</span><span class="step-res">&asymp; 15% ✓</span></div></div><div class="answer-box">Pris = 4 114 kr</div><div class="tip-box">Marginal räknas på priset &bull; Pålägg räknas på självkostnaden &mdash; de är inte samma sak!</div>'
+  },
+  {
+    id: 5,
+    topic: 'Budgetering',
+    type: 'single',
+    question: '<strong>Budgeterat värde av anläggningstillgångar</strong><br><br>Företaget "Hur svårt kan det vara AB" beräknar budgeterat värde av anläggningstillgångar 2026-12-31:<br><ul style="margin:8px 0;padding-left:20px;"><li>Värde anläggningstillgångar 2025-12-31: 23 578 931 kr</li><li>Budgeterade inköp 2026: 3 562 943 kr</li><li>Budgeterade avskrivningar 2026: 4 793 512 kr</li></ul>Vilket är det budgeterade värdet?',
+    options: ['18 432 759 kr','19 223 998 kr','27 654 789 kr','22 348 362 kr','22 978 456 kr','21 365 734 kr','20 849 510 kr','18 765 390 kr','23 432 687 kr','25 354 749 kr'],
+    correct: [3],
+    explanation: '<div class="math-formula">UB = IB + Inköp &minus; Avskrivningar</div><div class="calc-steps"><div class="calc-step"><span class="step-label">IB 2025-12-31</span><span class="step-eq"></span><span class="step-res">23 578 931 kr</span></div><div class="calc-step"><span class="step-label">+ Inköp 2026</span><span class="step-eq"></span><span class="step-res">+ 3 562 943 kr</span></div><div class="calc-step"><span class="step-label">Delsumma</span><span class="step-eq">23 578 931 + 3 562 943</span><span class="step-res">= 27 141 874 kr</span></div><div class="calc-step"><span class="step-label">&minus; Avskrivningar</span><span class="step-eq">27 141 874 &minus; 4 793 512</span><span class="step-res">= 22 348 362 kr</span></div></div><div class="answer-box">Budgeterat värde 2026-12-31 = 22 348 362 kr</div><div class="tip-box">Samma logik som ett T-konto: IB + debet (inköp) &minus; kredit (avskrivningar) = UB</div>'
+  },
+  {
+    id: 6,
+    topic: 'Kostnadsanalys',
+    type: 'single',
+    question: '<strong>Fasta och rörliga kostnader</strong><br><br>Ett konsultföretag i Huskvarna har följande utfall:<br><br><table style="border-collapse:collapse;width:100%;font-size:13px;margin:8px 0"><tr style="background:var(--surface2)"><th style="padding:6px 8px;border:1px solid var(--border);text-align:left">År</th><th style="padding:6px 8px;border:1px solid var(--border)">Projekt</th><th style="padding:6px 8px;border:1px solid var(--border)">Total kostnad</th></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">2024</td><td style="padding:4px 8px;border:1px solid var(--border);text-align:center">22 st</td><td style="padding:4px 8px;border:1px solid var(--border)">13 200 000 kr</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">2025</td><td style="padding:4px 8px;border:1px solid var(--border);text-align:center">30 st</td><td style="padding:4px 8px;border:1px solid var(--border)">16 544 000 kr</td></tr></table>Vad är företagets <strong>fasta kostnader per år</strong>?',
+    options: ['2 675 567 kr','2 050 829 kr','6 236 872 kr','4 004 000 kr','3 285 346 kr','2 987 000 kr','5 014 000 kr','3 412 592 kr','2 775 000 kr'],
+    correct: [3],
+    explanation: '<div class="math-formula">High-Low: Rörlig/enhet = &Delta;Kostnad &divide; &Delta;Volym</div><div class="calc-steps"><div class="calc-step"><span class="step-label">&Delta; Kostnad</span><span class="step-eq">16 544 000 &minus; 13 200 000</span><span class="step-res">= 3 344 000 kr</span></div><div class="calc-step"><span class="step-label">&Delta; Volym</span><span class="step-eq">30 &minus; 22</span><span class="step-res">= 8 projekt</span></div><div class="calc-step"><span class="step-label">Rörlig/projekt</span><span class="step-eq">3 344 000 &divide; 8</span><span class="step-res">= 418 000 kr</span></div><div class="calc-step"><span class="step-label">Fasta kostnader</span><span class="step-eq">13 200 000 &minus; 22 &times; 418 000</span><span class="step-res">= 4 004 000 kr</span></div><div class="calc-step"><span class="step-label">Kontroll 2025</span><span class="step-eq">16 544 000 &minus; 30 &times; 418 000</span><span class="step-res">= 4 004 000 ✓</span></div></div><div class="answer-box">Fasta kostnader = 4 004 000 kr/år</div>'
+  },
+  {
+    id: 7,
+    topic: 'Redovisning',
+    type: 'single',
+    question: '<strong>Kostnad såld vara och avskrivning</strong><br><br>"Maximera volymen AB" säljer solglasögon. Ekonomichef Hanna Kyl behöver beräkna KSV och avskrivning för 2025:<br><ul style="margin:8px 0;padding-left:20px;"><li>Lagervärde glasögon 1/1 2025: 4 325 678 kr</li><li>Inköp glasögon 2025: 9 431 956 kr</li><li>Lagervärde glasögon 31/12 2025: 3 846 798 kr</li><li>Ny server inköpt 1/1 2025: 545 000 kr, används 5 år</li></ul>Vad är <strong>Kostnad såld vara</strong> och <strong>avskrivning</strong> för servern år 2025?',
+    options: [
+      'KSV: 11 354 735 kr, Avskrivning: 75 000 kr',
+      'KSV: 9 910 836 kr, Avskrivning: 122 000 kr',
+      'KSV: 10 910 437 kr, Avskrivning: 136 000 kr',
+      'KSV: 8 610 236 kr, Avskrivning: 109 000 kr',
+      'KSV: 9 745 321 kr, Avskrivning: 99 000 kr',
+      'KSV: 9 910 836 kr, Avskrivning: 134 000 kr',
+      'KSV: 9 910 836 kr, Avskrivning: 109 000 kr',
+      'KSV: 9 431 956 kr, Avskrivning: 109 000 kr',
+    ],
+    correct: [6],
+    explanation: '<div class="math-formula">KSV = IB Lager + Inköp &minus; UB Lager</div><div class="calc-steps"><div class="calc-step"><span class="step-label">IB lager 1/1</span><span class="step-eq"></span><span class="step-res">4 325 678 kr</span></div><div class="calc-step"><span class="step-label">+ Inköp</span><span class="step-eq"></span><span class="step-res">+ 9 431 956 kr</span></div><div class="calc-step"><span class="step-label">&minus; UB lager 31/12</span><span class="step-eq"></span><span class="step-res">&minus; 3 846 798 kr</span></div><div class="calc-step"><span class="step-label">KSV</span><span class="step-eq">4 325 678 + 9 431 956 &minus; 3 846 798</span><span class="step-res">= 9 910 836 kr</span></div></div><div class="math-formula" style="margin-top:12px">Avskrivning (linjär) = Anskaffningsvärde &divide; Livslängd</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Server</span><span class="step-eq">545 000 &divide; 5 år</span><span class="step-res">= 109 000 kr/år</span></div></div><div class="answer-box">KSV = 9 910 836 kr &bull; Avskrivning = 109 000 kr</div>'
+  },
+  {
+    id: 8,
+    topic: 'Kostnadsanalys',
+    type: 'single',
+    question: '<strong>Kritisk volym</strong><br><br>Vilket av nedanstående påståenden är <strong>INTE</strong> korrekt när det gäller ett företags kritiska volym?',
+    options: [
+      'Den kritiska volymen är den volym då företagets totala intäkter är detsamma som företagets totalt fasta och rörliga kostnader.',
+      'Den kritiska volymen är den volym då företagets totalt fasta kostnader alltid är lika stora som de totalt rörliga kostnaderna.',
+      'Den kritiska volymen kan också benämnas break-even volym.',
+      'Den kritiska volymen är den volym då pris/st är detsamma som företagets totala kostnader/st.',
+      'Den kritiska volymen är den volym då företagets totala täckningsbidrag är detsamma som företagets totalt fasta kostnader.',
+      'Den kritiska volymen är den volym man drar bort (subtraherar) från den faktiska/verkliga volymen för att räkna fram den s k säkerhetsmarginalen.',
+    ],
+    correct: [1],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--success)">✓ Korrekt</span><span class="step-eq">Totala intäkter = Totala kostnader (fasta + rörliga)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ FEL</span><span class="step-eq">Fasta = Rörliga vid break-even &mdash; inget sådant krav!</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">✓ Korrekt</span><span class="step-eq">Kallas även break-even volym</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">✓ Korrekt</span><span class="step-eq">Vid kritisk volym: Pris/st = Totala kostnader/st</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">✓ Korrekt</span><span class="step-eq">Totalt TB = Fasta kostnader &rarr; Resultat = 0</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">✓ Korrekt</span><span class="step-eq">Säkerhetsmarginal = Faktisk volym &minus; Kritisk volym</span><span class="step-res"></span></div></div><div class="tip-box">Fasta och rörliga kostnader behöver inte vara lika stora vid break-even. Fasta kan vara mycket större eller mindre &mdash; det är summan som räknas.</div>'
+  },
+  {
+    id: 9,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Självkostnad enligt normalmetoden</strong><br><br>"Karaffen AB" sålde 25 567 glaskaraffer (intäkter: 3 323 710 kr). Från resultaträkningen:<br><ul style="margin:8px 0;padding-left:20px;"><li>Fasta kostnader: 880 000 kr</li><li>Rörliga kostnader: 2 045 360 kr</li></ul>Normalvolym: 22 000 st<br><br>Vad är självkostnaden per karaff enligt <strong>normalmetoden</strong>?',
+    options: ['Ca 114 kr/st','Exakt 132 kr/st','Ca 97 kr/st','Exakt 40 kr/st','Exakt 80 kr/st','Ca 148 kr/st','Ca 136 kr/st','Exakt 120 kr/st'],
+    correct: [7],
+    explanation: '<div class="math-formula">Normalmetoden: fast kostnad/st beräknas på normalvolymen, inte faktisk volym</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Rörlig/st</span><span class="step-eq">2 045 360 &divide; 25 567 (faktisk volym)</span><span class="step-res">= 80 kr/st</span></div><div class="calc-step"><span class="step-label">Fast/st</span><span class="step-eq">880 000 &divide; 22 000 (normalvolym)</span><span class="step-res">= 40 kr/st</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">80 + 40</span><span class="step-res">= 120 kr/st</span></div></div><div class="answer-box">Självkostnad = 120 kr/st</div><div class="tip-box">Normalmetoden ger en stabil självkostnad oavsett faktisk volym &mdash; undviker att fasta kostnader verkar ändras vid volymvariationer.</div>'
+  },
+  {
+    id: 10,
+    topic: 'Redovisning',
+    type: 'match',
+    question: '<strong>Värden i balansräkningen</strong><br><br>Balansräkning 2025-12-31 innehåller tre saknade värden A, B och C:<br><br><table style="border-collapse:collapse;width:100%;font-size:13px;margin:8px 0"><tr style="background:var(--surface2)"><th style="padding:6px 8px;border:1px solid var(--border)">Tillgångar</th><th style="padding:6px 8px;border:1px solid var(--border)">EK och skulder</th></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Anläggningstillgångar <strong>B</strong></td><td style="padding:4px 8px;border:1px solid var(--border)">Aktiekapital: 1 100 000</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Lager: 1 250 000</td><td style="padding:4px 8px;border:1px solid var(--border)">Ackumulerad vinst: 1 425 000</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Kundfordringar: 185 000</td><td style="padding:4px 8px;border:1px solid var(--border)">Årets vinst: 350 000</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Kassa: 2 260 000</td><td style="padding:4px 8px;border:1px solid var(--border)">Lån: 1 450 000</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)"></td><td style="padding:4px 8px;border:1px solid var(--border)">Leverantörsskulder <strong>C</strong></td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)"><strong>Totalt: A</strong></td><td style="padding:4px 8px;border:1px solid var(--border)">Totalt: <strong>5 445 000</strong></td></tr></table>Matcha A, B och C med rätt värde.',
+    pairs: [
+      { label: 'A = Totalt tillgångar', answer: '5 445 000 kr' },
+      { label: 'B = Anläggningstillgångar', answer: '1 750 000 kr' },
+      { label: 'C = Leverantörsskulder', answer: '1 120 000 kr' },
+    ],
+    options: ['5 445 000 kr', '1 750 000 kr', '1 120 000 kr', '2 100 000 kr', '3 163 000 kr', '4 148 000 kr'],
+    explanation: '<div class="math-formula">Tillgångar = Eget kapital + Skulder</div><div class="calc-steps"><div class="calc-step"><span class="step-label">A = Totalt tillg.</span><span class="step-eq">Lika med totalt EK + Skulder (given)</span><span class="step-res">= 5 445 000 kr</span></div><div class="calc-step"><span class="step-label">EK</span><span class="step-eq">1 100 000 + 1 425 000 + 350 000</span><span class="step-res">= 2 875 000 kr</span></div><div class="calc-step"><span class="step-label">C = Lev.skulder</span><span class="step-eq">5 445 000 &minus; 2 875 000 &minus; 1 450 000</span><span class="step-res">= 1 120 000 kr</span></div><div class="calc-step"><span class="step-label">B = Anl.tillg.</span><span class="step-eq">5 445 000 &minus; 1 250 000 &minus; 185 000 &minus; 2 260 000</span><span class="step-res">= 1 750 000 kr</span></div></div><div class="answer-box">A = 5 445 000 &bull; B = 1 750 000 &bull; C = 1 120 000 kr</div>'
+  },
+  {
+    id: 11,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Självkostnad — Påläggskalkyl "Solljus"</strong><br><br>Fönsterföretaget "Glasklart AB" skall beräkna självkostnaden för villafönstret "Solljus" enligt påläggsmetoden:<br><ul style="margin:8px 0;padding-left:20px;"><li>Direkt Material (DM): 463 kr</li><li>Direkt Lön (DL): 538 kr</li><li>Materialomkostnader (MO): 16% pålägg på DM</li><li>Tillverkningsomkostnader (TO): 34% pålägg på DL</li><li>AFFO-pålägg: 15% på tillverkningskostnad</li></ul>Vad är "Solljus" självkostnad?',
+    options: [
+      '"Solljus" självkostnad är exakt 1 002 kr/st',
+      '"Solljus" självkostnad är ca 1 233 kr/st',
+      '"Solljus" självkostnad är ca 1 447 kr/st',
+      '"Solljus" självkostnad är ca 1 671 kr/st',
+      '"Solljus" självkostnad är ca 1 257 kr/st',
+      '"Solljus" självkostnad är exakt 1 945 kr/st',
+      '"Solljus" självkostnad är exakt 1 600 kr/st',
+      '"Solljus" självkostnad är ca 1 771 kr/st',
+    ],
+    correct: [2],
+    explanation: '<div class="math-formula">SK = DM + DL + MO + TO + AFFO</div><div class="calc-steps"><div class="calc-step"><span class="step-label">DM</span><span class="step-eq"></span><span class="step-res">= 463,00 kr</span></div><div class="calc-step"><span class="step-label">DL</span><span class="step-eq"></span><span class="step-res">= 538,00 kr</span></div><div class="calc-step"><span class="step-label">MO (16% &times; DM)</span><span class="step-eq">463 &times; 0,16</span><span class="step-res">= 74,08 kr</span></div><div class="calc-step"><span class="step-label">TO (34% &times; DL)</span><span class="step-eq">538 &times; 0,34</span><span class="step-res">= 182,92 kr</span></div><div class="calc-step"><span class="step-label">Tillverkningsk.</span><span class="step-eq">463 + 538 + 74,08 + 182,92</span><span class="step-res">= 1 258,00 kr</span></div><div class="calc-step"><span class="step-label">AFFO (15% &times; TK)</span><span class="step-eq">1 258 &times; 0,15</span><span class="step-res">= 188,70 kr</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">1 258 + 188,70</span><span class="step-res">= 1 446,70 kr</span></div></div><div class="answer-box">Självkostnad &asymp; 1 447 kr/st</div>'
+  },
+  {
+    id: 12,
+    topic: 'Budgetering',
+    type: 'match',
+    question: '<strong>Huvudbudgetar</strong><br><br>Ange för varje budgetpost i vilken av de tre huvudbudgetarna den ingår.',
+    pairs: [
+      { label: 'Budgeterade intäkter', answer: 'Budgeterad resultaträkning' },
+      { label: 'Budgeterat värde på kundfordringar', answer: 'Budgeterad balansräkning' },
+      { label: 'Budgeterade inbetalningar från försäljning', answer: 'Likviditetsbudget' },
+    ],
+    options: ['Budgeterad resultaträkning', 'Budgeterad balansräkning', 'Likviditetsbudget'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Resultaträkning</span><span class="step-eq">Intäkter &amp; kostnader (periodiserade) &mdash; bokförs när intjänade</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Balansräkning</span><span class="step-eq">Tillgångar, skulder, EK vid periodens slut &mdash; t.ex. kundfordringar</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Likviditetsbudget</span><span class="step-eq">Faktiska in-/utbetalningar &mdash; när pengarna faktiskt betalas</span><span class="step-res"></span></div></div><div class="tip-box">Nyckelskillnad: En <em>intäkt</em> bokförs när den intjänas &mdash; <em>inbetalningen</em> sker när kunden faktiskt betalar. Det kan skilja månader.</div>'
+  },
+  {
+    id: 13,
+    topic: 'Redovisning',
+    type: 'match',
+    question: '<strong>Ekonomiska grundbegrepp</strong><br><br>Koppla ihop varje definition med rätt begrepp.',
+    pairs: [
+      { label: 'Skillnaden mellan ett företags intäkter och kostnader under en viss period', answer: 'Resultat' },
+      { label: 'Företag tar emot leverans och får faktura — vad har uppstått?', answer: 'Utgift' },
+      { label: 'Det ekonomiska värdet av förbrukning av resurser under en viss tidsperiod', answer: 'Kostnad' },
+    ],
+    options: ['Inkomst', 'Lönsamhet', 'Intäkt', 'Kostnad', 'Resultat', 'Utgift'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Resultat</span><span class="step-eq">Intäkter &minus; Kostnader (en periods ekonomiska utfall)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Utgift</span><span class="step-eq">Förpliktelse att betala uppstår (t.ex. leverans + faktura)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Kostnad</span><span class="step-eq">Värdet av periodens resursförbrukning</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Intäkt</span><span class="step-eq">Värdet av sålda varor/tjänster under perioden</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Inkomst</span><span class="step-eq">Försäljningsvärde vid försäljningstillfället</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Utbetalning</span><span class="step-eq">När pengar faktiskt lämnar kassan</span><span class="step-res"></span></div></div><div class="tip-box">Utgift &ne; Utbetalning &bull; Intäkt &ne; Inbetalning &mdash; dessa uppstår vid olika tidpunkter.</div>'
+  },
+  {
+    id: 14,
+    topic: 'Kostnadsanalys',
+    type: 'match',
+    question: '<strong>Kostnadstyper</strong><br><br>Ange vilken typ av kostnad som avses för varje definition.',
+    pairs: [
+      { label: 'En kostnad som i en självkostnadskalkyl påförs med hjälp av procentuella pålägg', answer: 'Indirekt kostnad' },
+      { label: 'En kostnad som totalt sett förändras när verksamhetsvolymen förändras', answer: 'Rörlig kostnad' },
+      { label: 'En kostnad som per st förändras när verksamhetsvolymen förändras', answer: 'Fast kostnad' },
+    ],
+    options: ['Fast kostnad', 'Direkt kostnad', 'Indirekt kostnad', 'Rörlig kostnad', 'Samkostnad', 'Särkostnad'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Indirekt kostnad</span><span class="step-eq">Ej direkt hänförbar &rarr; fördelas via pålägg (MO, TO, AFFO)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Rörlig kostnad</span><span class="step-eq">Totalt: ökar med volymen &bull; Per enhet: konstant</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Fast kostnad</span><span class="step-eq">Totalt: konstant &bull; Per enhet: förändras (&darr; vid &uarr; volym)</span><span class="step-res"></span></div></div><div class="tip-box">Vanlig förväxling: Rörlig/enhet = konstant &bull; Fast/enhet = ändras med volymen &mdash; tänk tvärtom mot vad det låter!</div>'
+  },
+  {
+    id: 15,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Marginal</strong><br><br>IT Solutions AB säljer produkten "Kelly":<br><ul style="margin:8px 0;padding-left:20px;"><li>Självkostnad: 457 kr</li><li>Försäljningspris: 567 kr</li></ul>Vad är produktens <strong>marginal</strong>?',
+    options: ['Ca 24%','Exakt 10%','Exakt 15%','Ca 9%','Exakt 26%','Ca 7%','Ca 19%','Exakt 20%','Ca 12%','Exakt 17%'],
+    correct: [6],
+    explanation: '<div class="math-formula">Marginal = (Pris &minus; Självkostnad) &divide; Pris</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Täckningsbidrag</span><span class="step-eq">567 &minus; 457</span><span class="step-res">= 110 kr</span></div><div class="calc-step"><span class="step-label">Marginal</span><span class="step-eq">110 &divide; 567</span><span class="step-res">&asymp; 19,4%</span></div><div class="calc-step"><span class="step-label">Pålägg (jmfr)</span><span class="step-eq">110 &divide; 457</span><span class="step-res">&asymp; 24% (ej samma!)</span></div></div><div class="answer-box">Marginal &asymp; 19%</div><div class="tip-box">Marginal räknas på priset (stor nämnare) &rarr; alltid lägre än pålägg som räknas på självkostnaden.</div>'
+  },
+  {
+    id: 16,
+    topic: 'Redovisning',
+    type: 'single',
+    question: '<strong>Företagsform</strong><br><br>Vilken typ av företagsform beskrivs av följande egenskaper?<br><br><div style="background:var(--surface2);border-radius:8px;padding:12px;margin:8px 0;font-size:14px"><ul style="padding-left:16px;space-y:4px"><li>Två eller flera delägare (enskilda eller juridiska personer) som driver företag under gemensamt namn</li><li>Var och en ansvarar med <strong>hela sin förmögenhet</strong> för företagets förbindelser</li><li>Juridisk person</li><li>Ägarna beskattas, inte företaget</li></ul></div>',
+    options: ['Publikt aktiebolag','Handelsbolag','Komanditbolag','Ekonomisk förening','Enskild näringsidkare','Stiftelse','Privat aktiebolag'],
+    correct: [1],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">2+ delägare</span><span class="step-eq">Driver under gemensamt namn &rarr; Handelsbolag</span><span class="step-res" style="color:var(--success)">✓ HB</span></div><div class="calc-step"><span class="step-label">Personligt ansvar</span><span class="step-eq">Solidariskt &mdash; varje delägare svarar med hela förmögenheten</span><span class="step-res" style="color:var(--success)">✓ HB</span></div><div class="calc-step"><span class="step-label">Juridisk person</span><span class="step-eq">Kan ingå avtal och äga tillgångar</span><span class="step-res" style="color:var(--success)">✓ HB</span></div><div class="calc-step"><span class="step-label">Skattas hos ägarna</span><span class="step-eq">Bolaget betalar ej skatt &mdash; delägarna beskattas för sin del</span><span class="step-res" style="color:var(--success)">✓ HB</span></div></div><div class="answer-box">= Handelsbolag</div><div class="tip-box">Kommanditbolag liknar HB men kommanditdelägare har begränsat ansvar &bull; Aktiebolag = begränsat ansvar + bolaget beskattas.</div>'
+  },
+  {
+    id: 17,
+    topic: 'Marknadsföring',
+    type: 'single',
+    question: '<strong>4P — Marknadsföringsmixen</strong><br><br>Modellen 4P är central inom operativ marknadsföring. Välj det alternativ som <strong>helt korrekt</strong> beskriver vad de fyra P:na innebär.',
+    options: [
+      'PROCESS (upplevelse vid köp), PRODUKT (kunderbjudande), PLATS (där kunden använder produkten) och PÅVERKAN (kommunikation)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (där kunden använder produkten) och PÅVERKAN (kommunikation)',
+      'PRIS (vad kunden betalar), PERSONAL (kompetens), PLATS (där kunden använder produkten) och PÅVERKAN (kommunikation)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (det sätt och sammanhang t.ex. butik i vilket produkt/tjänst görs tillgänglig) och PÅVERKAN (kommunikation)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (det sätt i vilket produkt görs tillgänglig) och PROBLEM (kvalitetssignal)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (där kunden använder produkten) och PÅVERKAN (faktorer som gör produkten unik)',
+    ],
+    correct: [3],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">PRIS</span><span class="step-eq">Det kunden betalar &mdash; prissättningsstrategi</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">PRODUKT</span><span class="step-eq">Kunderbjudande i form av fysisk produkt och/eller tjänst</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">PLATS</span><span class="step-eq">Det sätt och sammanhang (t.ex. butik) vari produkt/tjänst görs tillgänglig</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">PÅVERKAN</span><span class="step-eq">Hur erbjudandet kommuniceras &mdash; reklam, PR, säljkår</span><span class="step-res"></span></div></div><div class="tip-box">Plats &ne; var kunden <em>använder</em> produkten &mdash; det är distributionskanalen (hur/var produkten görs tillgänglig) som avses.</div>'
+  },
+  {
+    id: 18,
+    topic: 'Redovisning',
+    type: 'single',
+    question: '<strong>Grundbegrepp — utbetalning och kostnad</strong><br><br>"Glory days AB" säljer gitarrer. Händelser år 2025:<br><ul style="margin:8px 0;padding-left:20px;font-size:13px"><li><strong>2025-01-24:</strong> Beställning av 15 gitarrer "Badlands" à 3 500 kr</li><li><strong>2025-04-01:</strong> Gitarrerna levereras + faktura anländer</li><li><strong>2025-05-01:</strong> Fakturan betalas</li><li><strong>2025-12-31:</strong> 7 av 15 gitarrer har sålts</li></ul>Till vilket belopp uppgick <strong>utbetalningen</strong> och <strong>kostnaden</strong> för gitarrerna år 2025?',
+    options: [
+      'Utbetalning 42 500 kr, kostnad 35 000 kr',
+      'Utbetalning 68 500 kr, kostnad 34 500 kr',
+      'Utbetalning 52 500 kr, kostnad 24 500 kr',
+      'Utbetalning 75 000 kr, kostnad 24 500 kr',
+      'Utbetalning 52 500 kr, kostnad 35 000 kr',
+      'Utbetalning 22 500 kr, kostnad 19 500 kr',
+      'Utbetalning 33 000 kr, kostnad 15 500 kr',
+    ],
+    correct: [2],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Utbetalning</span><span class="step-eq">15 gitarrer &times; 3 500 kr (betalas 2025-05-01)</span><span class="step-res">= 52 500 kr</span></div><div class="calc-step"><span class="step-label">Kostnad</span><span class="step-eq">7 sålda gitarrer &times; 3 500 kr</span><span class="step-res">= 24 500 kr</span></div><div class="calc-step"><span class="step-label">Kvar i lager</span><span class="step-eq">8 gitarrer &times; 3 500 = 28 000 kr &rarr; tillgång, ej kostnad</span><span class="step-res"></span></div></div><div class="answer-box">Utbetalning = 52 500 kr &bull; Kostnad = 24 500 kr</div><div class="tip-box">Utbetalning gäller alla 15 inköpta &bull; Kostnad gäller bara de 7 som sålts &bull; De 8 i lager är en tillgång &mdash; inte en kostnad.</div>'
+  },
+  {
+    id: 19,
+    topic: 'Lönsamhet',
+    type: 'single',
+    question: '<strong>Lönsamhetsmått — Bulls-eye AB</strong><br><br>Vilket alternativ är ett korrekt <strong>lönsamhetsmått</strong> för år 2025?<br><br><table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0"><tr style="background:var(--surface2)"><th style="padding:4px 8px;border:1px solid var(--border)">Resultaträkning 2025</th><th style="padding:4px 8px;border:1px solid var(--border)"></th></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Intäkter</td><td style="padding:3px 8px;border:1px solid var(--border)">16 235 000</td></tr><tr style="background:var(--surface2)"><td style="padding:3px 8px;border:1px solid var(--border)">Kostnad sålda varor</td><td style="padding:3px 8px;border:1px solid var(--border)">11 420 000</td></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Övriga rörelsekostnader</td><td style="padding:3px 8px;border:1px solid var(--border)">3 835 800</td></tr><tr style="background:var(--surface2)"><td style="padding:3px 8px;border:1px solid var(--border)"><strong>Rörelseresultat</strong></td><td style="padding:3px 8px;border:1px solid var(--border)"><strong>979 200</strong></td></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Räntekostnader</td><td style="padding:3px 8px;border:1px solid var(--border)">120 000</td></tr><tr style="background:var(--surface2)"><td style="padding:3px 8px;border:1px solid var(--border)"><strong>Resultat efter fin. poster</strong></td><td style="padding:3px 8px;border:1px solid var(--border)"><strong>859 200</strong></td></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Totala tillgångar</td><td style="padding:3px 8px;border:1px solid var(--border)">4 214 000</td></tr></table>',
+    options: [
+      'Resultat efter finansiella poster som är 859 200 kr',
+      'Räntabilitet på totalt kapital som är ca 12,13%',
+      'Soliditet som är ca 81%',
+      'Intäkter som är 16 235 000 kr',
+      'Räntabilitet på eget kapital som är exakt 42%',
+      'Räntabilitet på totalt kapital som är ca 20,2%',
+      'Rörelsemarginal som är ca 6%',
+      'Bruttomarginal som är ca 42%',
+    ],
+    correct: [6],
+    explanation: '<div class="math-formula">Rörelsemarginal = Rörelseresultat &divide; Intäkter</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Rörelsemarginal</span><span class="step-eq">979 200 &divide; 16 235 000</span><span class="step-res">&asymp; 6,0% ✓</span></div><div class="calc-step"><span class="step-label">Rt tot. kapital</span><span class="step-eq">979 200 &divide; 4 214 000</span><span class="step-res">= 23,2% (ej 12% eller 20%)</span></div><div class="calc-step"><span class="step-label">Bruttomarginal</span><span class="step-eq">(16 235 000 &minus; 11 420 000) &divide; 16 235 000</span><span class="step-res">= 29,7% (ej 42%)</span></div><div class="calc-step"><span class="step-label">Soliditet</span><span class="step-eq">EK &divide; totalt kapital &mdash; soliditetsmått, ej lönsamhetsmått</span><span class="step-res"></span></div></div><div class="answer-box">Rörelsemarginal &asymp; 6% ✓</div>'
+  },
+  {
+    id: 20,
+    topic: 'Affärsutveckling',
+    type: 'single',
+    question: '<strong>NABC-modellen</strong><br><br>Modellen NABC är bra att använda för att generera affärsidé. Vad innebär <strong>N:et</strong> i modellen?',
+    options: [
+      'Beskriver det sätt på vilket kundrelationer skall skapas.',
+      'Beskriver den anpassade marknadsmixen som skall användas.',
+      'Beskriver det unika tillvägagångssätt som företaget skall möta ett kundbehov på.',
+      'Beskriver specifikt de hållbarhetsaspekter som erbjudandet tillgodoser.',
+      'Beskriver de specifika kundsegment som skall erbjudas lösning på problem.',
+      'Beskriver de alternativa sätt som kunden kan tillgodose sitt behov med.',
+      'Beskriver de kundbehov som skall uppfyllas dvs vilka problem som behöver lösas.',
+      'Beskriver den kvantifierade kundnyttan i förhållande till kundens kostnad.',
+    ],
+    correct: [6],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--success)">N = Need</span><span class="step-eq">Kundbehov &mdash; vilka problem behöver lösas? &larr; frågan gäller detta</span><span class="step-res" style="color:var(--success)">✓</span></div><div class="calc-step"><span class="step-label">A = Approach</span><span class="step-eq">Det unika tillvägagångssätt företaget möter behovet med</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">B = Benefits</span><span class="step-eq">Den kvantifierade kundnyttan i förhållande till kundens kostnad</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">C = Competition</span><span class="step-eq">Alternativa sätt kunden kan tillgodose sitt behov med</span><span class="step-res"></span></div></div><div class="answer-box">N = Need (Behov) = vilka kundbehov/problem skall lösas</div>'
+  },
+  {
+    id: 21,
+    topic: 'Kostnadsanalys',
+    type: 'single',
+    question: '<strong>Resultat och kritisk volym</strong><br><br>"Pennfabriken AB" tillverkar bläckpennor. Information från 2025:<br><ul style="margin:8px 0;padding-left:20px;"><li>Volym: 12 345 800 st</li><li>Intäkter: 4 938 320 kr</li><li>Totalt rörliga kostnader: 2 469 160 kr</li><li>Totalt fasta kostnader: 1 600 000 kr</li></ul>Vad var <strong>resultatet</strong> för 2025 och vad är <strong>kritisk volym</strong>?',
+    options: [
+      'Resultat 869 160 kr och kritisk volym 4 000 000 st',
+      'Resultat 769 160 kr och kritisk volym 8 000 000 st',
+      'Resultat 900 000 kr och kritisk volym 9 500 000 st',
+      'Resultat 1 234 678 kr och kritisk volym 6 500 000 st',
+      'Resultat 900 000 kr och kritisk volym 9 200 000 st',
+      'Resultat 1 334 678 kr och kritisk volym 6 500 000 st',
+      'Resultat 869 160 kr och kritisk volym 8 000 000 st',
+      'Resultat 1 234 678 kr och kritisk volym 7 500 000 st',
+    ],
+    correct: [0],
+    explanation: '<div class="math-formula">Resultat = TB &minus; Fasta kostnader &nbsp;&bull;&nbsp; TB = Intäkter &minus; Rörliga kostnader</div><div class="calc-steps"><div class="calc-step"><span class="step-label">TB totalt</span><span class="step-eq">4 938 320 &minus; 2 469 160</span><span class="step-res">= 2 469 160 kr</span></div><div class="calc-step"><span class="step-label">Resultat</span><span class="step-eq">2 469 160 &minus; 1 600 000</span><span class="step-res">= 869 160 kr</span></div><div class="calc-step"><span class="step-label">TB/st (pris/st)</span><span class="step-eq">4 938 320 &divide; 12 345 800</span><span class="step-res">= 0,40 kr/st</span></div><div class="calc-step"><span class="step-label">Kritisk volym</span><span class="step-eq">1 600 000 &divide; 0,40</span><span class="step-res">= 4 000 000 st</span></div></div><div class="answer-box">Resultat = 869 160 kr &bull; Kritisk volym = 4 000 000 st</div><div class="tip-box">Vid 4 000 000 st täcker täckningsbidraget precis de fasta kostnaderna &rarr; Resultat = 0</div>'
+  },
+];
+
+const questions2 = [
+  {
+    id: 1,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Självkostnad enligt normalmetoden</strong><br><br>Det lilla källarföretaget "Normal AB" köpte in och sålde år 2024 <strong>225 567 st</strong> mobilskal vilket innebar intäkter på 1 127 835 kr.<br><br>Företaget har haft följande volymer de 3 senaste åren:<br><ul style="margin:8px 0;padding-left:20px;"><li>2021: 210 814 st</li><li>2022: 228 564 st</li><li>2023: 219 858 st</li></ul>Fasta kostnader 2024: 221 000 kr &nbsp;·&nbsp; Rörliga kostnader 2024: 676 701 kr<br><br>Normalvolym = genomsnitt av 2021–2023. Vad är självkostnaden per styck?',
+    options: ['Ca 3 kr/st','Ca 5 kr/st','Exakt 2,50 kr/st','Ca 8,20 kr/st','Exakt 6 kr/st','Ca 1 kr/st','Exakt 10 kr/st','Ca 4 kr/st'],
+    correct: [7],
+    explanation: '<div class="math-formula">Normalmetoden: Fast/st = Fasta &divide; Normalvolym &nbsp;&bull;&nbsp; Rörlig/st = Rörliga &divide; Faktisk volym</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Normalvolym</span><span class="step-eq">(210 814 + 228 564 + 219 858) &divide; 3</span><span class="step-res">= 219 745 st</span></div><div class="calc-step"><span class="step-label">Rörlig/st</span><span class="step-eq">676 701 &divide; 225 567 (faktisk)</span><span class="step-res">&asymp; 3,00 kr/st</span></div><div class="calc-step"><span class="step-label">Fast/st</span><span class="step-eq">221 000 &divide; 219 745 (normalvol)</span><span class="step-res">&asymp; 1,00 kr/st</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">3,00 + 1,00</span><span class="step-res">= 4 kr/st</span></div></div><div class="answer-box">Självkostnad &asymp; 4 kr/st</div>'
+  },
+  {
+    id: 2,
+    topic: 'Redovisning',
+    type: 'single',
+    question: '<strong>Kostnad</strong><br><br>Företaget Scandinavian Eyewear köper in och säljer vidare glasögonbågar.<br><ul style="margin:8px 0;padding-left:20px;"><li>Lagervärde glasögonbågar <strong>1/1 2025:</strong> 22 000 450 kr</li><li>Lagervärde glasögonbågar <strong>30/4 2025:</strong> 15 750 000 kr</li><li>Inga inköp av glasögonbågar gjordes under perioden</li></ul>Hur stor är kostnaden för glasögonbågar för perioden 1/1–30/4 2025?',
+    options: ['Kostnaden är 6 150 000 kr','Kostnaden är 6 250 450 kr','Kostnaden är 0 kr','Kostnaden är 15 750 000 kr','Kostnaden är 10 000 000 kr','Kostnaden är 7 250 000 kr','Kostnaden är 1 000 000 kr','Kostnaden är 6 575 000 kr'],
+    correct: [1],
+    explanation: '<div class="math-formula">Kostnad = Lagerminskning = IB Lager &minus; UB Lager (inga inköp)</div><div class="calc-steps"><div class="calc-step"><span class="step-label">IB lager 1/1</span><span class="step-eq"></span><span class="step-res">22 000 450 kr</span></div><div class="calc-step"><span class="step-label">&minus; UB lager 30/4</span><span class="step-eq"></span><span class="step-res">&minus; 15 750 000 kr</span></div><div class="calc-step"><span class="step-label">Kostnad</span><span class="step-eq">22 000 450 &minus; 15 750 000</span><span class="step-res">= 6 250 450 kr</span></div></div><div class="answer-box">Kostnad = 6 250 450 kr</div><div class="tip-box">Eftersom inga inköp gjorts är lagerminskningen direkt lika med resursförbrukningen (kostnaden).</div>'
+  },
+  {
+    id: 3,
+    topic: 'Redovisning',
+    type: 'single',
+    question: '<strong>Kostnad sålda varor</strong><br><br>Företaget "Hur svårt kan det vara AB" budgeterar för år 2024:<br><ul style="margin:8px 0;padding-left:20px;"><li>Lagervärde 1/1 2024: 345 000 kr</li><li>Budgeterat lagervärde 31/12 2024: 390 000 kr</li><li>Leverantörsskulder 1/1 2024: 820 000 kr</li><li>Budgeterade leverantörsskulder 31/12 2024: 800 000 kr</li><li>Budgeterat inköp 2024: 3 450 000 kr</li></ul>Beräkna budgeterad <strong>Kostnad för såld vara</strong> för år 2024.',
+    options: ['Kostnad för såld vara är 3 435 000 kr','Kostnad för såld vara är 3 450 000 kr','Kostnad för såld vara är 3 470 000 kr','Kostnad för såld vara är 3 405 000 kr','Kostnad för såld vara är 3 060 000 kr','Kostnad för såld vara är 3 490 000 kr'],
+    correct: [3],
+    explanation: '<div class="math-formula">KSV = IB Lager + Inköp &minus; UB Lager</div><div class="calc-steps"><div class="calc-step"><span class="step-label">IB lager 1/1</span><span class="step-eq"></span><span class="step-res">345 000 kr</span></div><div class="calc-step"><span class="step-label">+ Inköp</span><span class="step-eq"></span><span class="step-res">+ 3 450 000 kr</span></div><div class="calc-step"><span class="step-label">&minus; UB lager 31/12</span><span class="step-eq"></span><span class="step-res">&minus; 390 000 kr</span></div><div class="calc-step"><span class="step-label">KSV</span><span class="step-eq">345 000 + 3 450 000 &minus; 390 000</span><span class="step-res">= 3 405 000 kr</span></div></div><div class="answer-box">KSV = 3 405 000 kr</div><div class="tip-box">Leverantörsskulder är en betalningsfråga och påverkar INTE KSV-beräkningen.</div>'
+  },
+  {
+    id: 4,
+    topic: 'Affärsutveckling',
+    type: 'single',
+    question: '<strong>Affärsidé</strong><br><br>Vilka tre frågor bör en välformulerad affärsidé för ett företag besvara?',
+    options: ['Vad? Hur? Till vem?','Intäkt? Kostnad? Resultat?','Antal? När? Till vilken kostnad?','Varför? När? I vilket syfte?','Var? Storlek? Till vilket pris?'],
+    correct: [0],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--success)">VAD?</span><span class="step-eq">Vilket erbjudande/produkt/tjänst levererar vi?</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">HUR?</span><span class="step-eq">På vilket sätt/med vilka resurser levererar vi det?</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">TILL VEM?</span><span class="step-eq">Vilka kunder/segment riktar vi oss till?</span><span class="step-res"></span></div></div><div class="answer-box">Vad? &bull; Hur? &bull; Till vem?</div>'
+  },
+  {
+    id: 5,
+    topic: 'Lönsamhet',
+    type: 'single',
+    question: '<strong>Begrepp för betalningsförmåga</strong><br><br>Ett viktigt begrepp handlar om mängden pengar ett företag har tillgång till på kort sikt för att kunna betala löner, fakturor, hyror etc. Ett företag med god förmåga att betala dessa brukar man säga har en bra....<br><br>Vilket begrepp är direkt kopplat till betalningsförmåga?',
+    options: ['Soliditet','Rörelsemarginal','Kapitalomsättningshastighet','Räntabilitet','Kalkylränta','Likviditet','Nettoomsättning'],
+    correct: [5],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--success)">Likviditet</span><span class="step-eq">Förmågan att betala löpande åtaganden på kort sikt</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Soliditet</span><span class="step-eq">Andel eget kapital av totalt kapital &mdash; långsiktig stabilitet</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Räntabilitet</span><span class="step-eq">Avkastning på investerat kapital &mdash; lönsamhetsmått</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Rörelsemarginal</span><span class="step-eq">Rörelseresultat / Intäkter &mdash; lönsamhetsmått</span><span class="step-res"></span></div></div><div class="answer-box">Likviditet = betalningsförmåga på kort sikt</div>'
+  },
+  {
+    id: 6,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Självkostnad — Påläggskalkyl</strong><br><br>Ett företag tillämpar påläggskalkylering med följande pålägg:<br><ul style="margin:8px 0;padding-left:20px;"><li>MO-pålägg: 16 % på direkt material</li><li>TO-pålägg: 22 % på direkt lön</li><li>AFFO-pålägg: 15 % på tillverkningskostnad</li></ul>Direkt material: 172 kr &nbsp;·&nbsp; Direkt lön: 90 kr<br><br>Vad är produktens självkostnad?',
+    options: ['Produktens självkostnad är ca 336 kr/st','Produktens självkostnad är ca 296 kr/st','Produktens självkostnad är ca 375 kr/st','Produktens självkostnad är ca 456 kr/st','Produktens självkostnad är ca 325 kr/st','Produktens självkostnad är ca 356 kr/st','Produktens självkostnad är ca 256 kr/st'],
+    correct: [5],
+    explanation: '<div class="math-formula">SK = DM + DL + MO + TO + AFFO</div><div class="calc-steps"><div class="calc-step"><span class="step-label">DM</span><span class="step-eq"></span><span class="step-res">= 172,00 kr</span></div><div class="calc-step"><span class="step-label">DL</span><span class="step-eq"></span><span class="step-res">= 90,00 kr</span></div><div class="calc-step"><span class="step-label">MO (16% &times; DM)</span><span class="step-eq">172 &times; 0,16</span><span class="step-res">= 27,52 kr</span></div><div class="calc-step"><span class="step-label">TO (22% &times; DL)</span><span class="step-eq">90 &times; 0,22</span><span class="step-res">= 19,80 kr</span></div><div class="calc-step"><span class="step-label">Tillverkningsk.</span><span class="step-eq">172 + 90 + 27,52 + 19,80</span><span class="step-res">= 309,32 kr</span></div><div class="calc-step"><span class="step-label">AFFO (15% &times; TK)</span><span class="step-eq">309,32 &times; 0,15</span><span class="step-res">= 46,40 kr</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">309,32 + 46,40</span><span class="step-res">= 355,72 kr</span></div></div><div class="answer-box">Självkostnad &asymp; 356 kr/st</div>'
+  },
+  {
+    id: 7,
+    topic: 'Redovisning',
+    type: 'match',
+    question: '<strong>Ekonomiska grundbegrepp</strong><br><br>Koppla ihop varje definition med rätt ekonomiskt begrepp.',
+    pairs: [
+      { label: 'Vid det tillfälle ett företag säljer en produkt/tjänst till en kund uppstår....', answer: 'Inkomst' },
+      { label: 'Skillnaden mellan ett företags intäkter och kostnader under en viss period kallas för....', answer: 'Resultat' },
+      { label: 'Företag får leverans av material från leverantör, samma dag anländer fakturan. Då har ....uppstått', answer: 'Utgift' },
+    ],
+    options: ['Inkomst', 'Utgift', 'Kostnad', 'Resultat', 'Lönsamhet', 'Intäkt'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Inkomst</span><span class="step-eq">Uppstår vid försäljningstillfället &mdash; värdet av det som sålts</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Resultat</span><span class="step-eq">Intäkter &minus; Kostnader under perioden</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Utgift</span><span class="step-eq">Förpliktelse att betala uppstår (leverans + faktura)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Intäkt</span><span class="step-eq">Periodens prestationer (värdet av sålda varor/tjänster)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Kostnad</span><span class="step-eq">Värdet av periodens resursförbrukning</span><span class="step-res"></span></div></div><div class="tip-box">Inkomst &ne; Intäkt: Inkomst uppstår vid försäljning, Intäkt är periodiserad. Utgift &ne; Utbetalning: utgift vid faktura, utbetalning vid betalning.</div>'
+  },
+  {
+    id: 8,
+    topic: 'Kostnadsanalys',
+    type: 'single',
+    question: '<strong>Rörliga och fasta kostnader</strong><br><br>Ett företag ser över sina årliga kostnader:<br><br><table style="border-collapse:collapse;width:100%;font-size:13px;margin:8px 0"><tr style="background:var(--surface2)"><th style="padding:6px 8px;border:1px solid var(--border)">Volym</th><th style="padding:6px 8px;border:1px solid var(--border)">Total kostnad</th></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">200 000 st</td><td style="padding:4px 8px;border:1px solid var(--border)">4 500 000 kr</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">180 000 st</td><td style="padding:4px 8px;border:1px solid var(--border)">4 250 000 kr</td></tr></table>Rörliga kostnader är proportionella och fasta kostnader är helt fasta.<br>Vad är företagets totalt <strong>fasta kostnader</strong>?',
+    options: ['2 750 000 kr','2 250 000 kr','1 750 000 kr','1 500 000 kr','2 500 000 kr','1 250 000 kr','2 000 000 kr','1 850 000 kr'],
+    correct: [6],
+    explanation: '<div class="math-formula">High-Low: Rörlig/st = &Delta;Kostnad &divide; &Delta;Volym</div><div class="calc-steps"><div class="calc-step"><span class="step-label">&Delta; Kostnad</span><span class="step-eq">4 500 000 &minus; 4 250 000</span><span class="step-res">= 250 000 kr</span></div><div class="calc-step"><span class="step-label">&Delta; Volym</span><span class="step-eq">200 000 &minus; 180 000</span><span class="step-res">= 20 000 st</span></div><div class="calc-step"><span class="step-label">Rörlig/st</span><span class="step-eq">250 000 &divide; 20 000</span><span class="step-res">= 12,50 kr/st</span></div><div class="calc-step"><span class="step-label">Fasta kostnader</span><span class="step-eq">4 500 000 &minus; 200 000 &times; 12,50</span><span class="step-res">= 2 000 000 kr</span></div><div class="calc-step"><span class="step-label">Kontroll</span><span class="step-eq">4 250 000 &minus; 180 000 &times; 12,50</span><span class="step-res">= 2 000 000 ✓</span></div></div><div class="answer-box">Fasta kostnader = 2 000 000 kr</div>'
+  },
+  {
+    id: 9,
+    topic: 'Affärsutveckling',
+    type: 'single',
+    question: '<strong>Hållbarhetsbegrepp</strong><br><br>I januari 2011 lanserade Michael Porter och Mark R Kramer ett nytt begrepp som kopplar samman företagets strategi med socialt ansvarstagande. I stället för att se socialt ansvar som "ett nödvändigt ont" skall detta ingå i affärsmodellen för ökad konkurrenskraft och lönsamhet.<br><br>Vad är benämningen på detta begrepp? (Hela alternativet skall vara korrekt)',
+    options: ['CSA - Creating Shared Assets','CCV - Co Creating Value','CSV - Creating Shared Value','FSV - Finding Shared Value','CSR - Corporate Social Responsibility.','CSV - Corporate Shared Value'],
+    correct: [2],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--success)">CSV</span><span class="step-eq">Creating Shared Value &mdash; Porter &amp; Kramer, 2011</span><span class="step-res" style="color:var(--success)">✓</span></div><div class="calc-step"><span class="step-label">CSR</span><span class="step-eq">Corporate Social Responsibility &mdash; äldre begrepp, sett som kostnad</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">CSV vs CSR</span><span class="step-eq">CSV integrerar socialt ansvar i affärsmodellen &rarr; konkurrenskraft</span><span class="step-res"></span></div></div><div class="answer-box">CSV &mdash; Creating Shared Value</div><div class="tip-box">Notera: CSV (&ldquo;Corporate Shared Value&rdquo; i sista alternativet) är fel &mdash; rätt är &ldquo;Creating Shared Value&rdquo;.</div>'
+  },
+  {
+    id: 10,
+    topic: 'Företagsformer',
+    type: 'match',
+    question: '<strong>Juridisk form</strong><br><br>Kombinera nedanstående påståenden med korrekt juridisk form.',
+    pairs: [
+      { label: 'Denna form kräver en ekonomisk insats av ägare på minst 25 000 kr', answer: 'Aktiebolag (AB)' },
+      { label: 'I denna form är fler än en person ägare och varje ägare svarar med hela sin privata förmögenhet för företagets förbindelser', answer: 'Handelsbolag' },
+      { label: 'I denna form är det en person som driver verksamheten och denna person är personligen ansvarig för verksamhetens skulder', answer: 'Enskild firma/Enskild näringsidkare' },
+    ],
+    options: ['Ekonomisk förening', 'Kommanditbolag', 'Aktiebolag (AB)', 'Stiftelse', 'Handelsbolag', 'Enskild firma/Enskild näringsidkare'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Aktiebolag</span><span class="step-eq">Kräver minst 25 000 kr i aktiekapital &bull; Begränsat ägaransvar</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Handelsbolag</span><span class="step-eq">2+ delägare, solidariskt personligt ansvar med hela förmögenheten</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Enskild firma</span><span class="step-eq">En person, personligt och obegränsat ansvar för skulder</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Kommanditbolag</span><span class="step-eq">Som HB men kommanditdelägare har begränsat ansvar</span><span class="step-res"></span></div></div>'
+  },
+  {
+    id: 11,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Försäljningspris och marginal</strong><br><br>Gitarrföretaget "The Boss AB" skall lansera gitarren "Guran". Självkostnaden är beräknad till <strong>1 870 kr</strong>. Företaget vill ha en <strong>marginal på 15%</strong>.<br><br>Vilket pris skall företaget sätta?',
+    options: ['2 718,75 kr','2 900 kr','ca 12 467 kr','2 200 kr','2 490 kr','1 870 kr','2 150,50 kr','3 250 kr'],
+    correct: [3],
+    explanation: '<div class="math-formula">Marginal = (Pris &minus; SK) &divide; Pris &nbsp;&rarr;&nbsp; P = SK &divide; (1 &minus; marginal)</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Ekvation</span><span class="step-eq">0,15 = (P &minus; 1 870) &divide; P</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Omforma</span><span class="step-eq">0,85 &times; P = 1 870</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Pris</span><span class="step-eq">1 870 &divide; 0,85</span><span class="step-res">= 2 200 kr</span></div><div class="calc-step"><span class="step-label">Kontroll</span><span class="step-eq">(2 200 &minus; 1 870) &divide; 2 200 = 330 &divide; 2 200</span><span class="step-res">= 15% ✓</span></div></div><div class="answer-box">Pris = 2 200 kr</div>'
+  },
+  {
+    id: 12,
+    topic: 'Affärsmodell',
+    type: 'single',
+    question: '<strong>Business Model Canvas</strong><br><br>Business Model Canvas är ett viktigt verktyg vid bearbetning av ett företags affärsmodell. Bilden visar duken med dolda benämningar. Frågetecknet sitter i den <strong>högra yttre cellen</strong> (stor cell till höger, hela höjden).<br><br>Vilken benämning motsvarar frågetecknet?',
+    options: ['Viktiga affärspartners','Pris till kunderna','Distribution','Kundsegment','Nyckelresurser','Marknadsföring','Värdeerbjudande','Intäktsströmmar','Kundrelationer'],
+    correct: [3],
+    explanation: '<p style="margin-bottom:8px">Business Model Canvas har <strong>9 standardblock</strong> i ett fast mönster:</p><div class="calc-steps"><div class="calc-step"><span class="step-label">Vänster yttre</span><span class="step-eq">Nyckelpartners (stor cell, hela höjden)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Mitten vänster &uarr;</span><span class="step-eq">Nyckelaktiviteter</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Mitten vänster &darr;</span><span class="step-eq">Nyckelresurser</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Centrum</span><span class="step-eq">Värdeerbjudande</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Mitten höger &uarr;</span><span class="step-eq">Kundrelationer</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Mitten höger &darr;</span><span class="step-eq">Kanaler</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">Höger yttre</span><span class="step-eq">Kundsegment (stor cell, hela höjden) &larr; frågetecknet</span><span class="step-res" style="color:var(--success)">✓</span></div></div><div class="answer-box">Höger yttre cell = Kundsegment</div>'
+  },
+  {
+    id: 13,
+    topic: 'Budgetering',
+    type: 'match',
+    question: '<strong>Huvudbudgetar</strong><br><br>Ange för varje budgetpost i vilken av de tre huvudbudgetarna den ingår.',
+    pairs: [
+      { label: 'Budgeterade intäkter', answer: 'Budgeterad resultaträkning' },
+      { label: 'Budgeterade inbetalningar', answer: 'Likviditetsbudget' },
+      { label: 'Budgeterad kostnad för sålda varor', answer: 'Budgeterad resultaträkning' },
+    ],
+    options: ['Budgeterad balansräkning', 'Budgeterad resultaträkning', 'Likviditetsbudget'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Resultaträkning</span><span class="step-eq">Intäkter &amp; Kostnader (periodiserade) &mdash; KSV är en kostnad</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Likviditetsbudget</span><span class="step-eq">Faktiska in-/utbetalningar &mdash; inbetalningar när kunden betalar</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Balansräkning</span><span class="step-eq">Tillgångar, skulder, EK vid periodens slut</span><span class="step-res"></span></div></div><div class="tip-box">Intäkt &ne; Inbetalning: intäkten bokförs vid försäljning, inbetalningen när kunden faktiskt betalar. Bägge härstammar från samma affär men hamnar i olika budgetar.</div>'
+  },
+  {
+    id: 14,
+    topic: 'Budgetering',
+    type: 'match',
+    question: '<strong>Budgetvärden A, B och C</strong><br><br>Ett nystartat företag sammanställer sina budgetar för år 1:<br><br><table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0"><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border);font-weight:700">Likviditetsbudget</td><td style="padding:4px 8px;border:1px solid var(--border)">År 1</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Likvida medel 1/1</td><td style="padding:4px 8px;border:1px solid var(--border)">0</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Inbetalningar totalt</td><td style="padding:4px 8px;border:1px solid var(--border)">1 120 000</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)" style="padding-left:16px">&nbsp;&nbsp;Försäljning</td><td style="padding:4px 8px;border:1px solid var(--border)">670 000</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">&nbsp;&nbsp;Ägarinsats</td><td style="padding:4px 8px;border:1px solid var(--border)"><strong>B</strong></td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">&nbsp;&nbsp;Lån</td><td style="padding:4px 8px;border:1px solid var(--border)">300 000</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Utbetalningar totalt</td><td style="padding:4px 8px;border:1px solid var(--border)">690 000</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Likvida medel 31/12</td><td style="padding:4px 8px;border:1px solid var(--border)">430 000</td></tr></table><table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0"><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border);font-weight:700">Budgeterad balansräkning 31/12</td><td style="padding:4px 8px;border:1px solid var(--border)"></td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Tillgångar / Kassa</td><td style="padding:4px 8px;border:1px solid var(--border)"><strong>A</strong></td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Banklån</td><td style="padding:4px 8px;border:1px solid var(--border)"><strong>C</strong></td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Eget kapital</td><td style="padding:4px 8px;border:1px solid var(--border)">163 000</td></tr></table>Resultatbudget: Intäkter 670 000 &minus; Kostnader 657 000 = Resultat 13 000 kr.<br><br>Matcha A, B och C med rätt värde.',
+    pairs: [
+      { label: 'A = Tillgångar / Kassa 31/12', answer: '430 000 kr' },
+      { label: 'B = Ägarinsats', answer: '150 000 kr' },
+      { label: 'C = Banklån 31/12', answer: '267 000 kr' },
+    ],
+    options: ['150 000 kr', '430 000 kr', '153 000 kr', '267 000 kr', '148 000 kr', '13 000 kr', '15 000 kr'],
+    explanation: '<div class="math-formula">A = Likvida medel 31/12 &bull; B = Inbetal. &minus; Försäljning &minus; Lån &bull; C = Lån &minus; Amortering</div><div class="calc-steps"><div class="calc-step"><span class="step-label">A (Kassa)</span><span class="step-eq">= Likvida medel 31/12</span><span class="step-res">= 430 000 kr</span></div><div class="calc-step"><span class="step-label">B (Ägarinsats)</span><span class="step-eq">1 120 000 &minus; 670 000 &minus; 300 000</span><span class="step-res">= 150 000 kr</span></div><div class="calc-step"><span class="step-label">EK kontroll</span><span class="step-eq">Ägarinsats + Resultat = 150 000 + 13 000</span><span class="step-res">= 163 000 ✓</span></div><div class="calc-step"><span class="step-label">C (Banklån)</span><span class="step-eq">A &minus; EK = 430 000 &minus; 163 000</span><span class="step-res">= 267 000 kr</span></div></div><div class="answer-box">A = 430 000 &bull; B = 150 000 &bull; C = 267 000 kr</div>'
+  },
+  {
+    id: 15,
+    topic: 'Redovisning',
+    type: 'single',
+    question: '<strong>Balans- och resultaträkning — utdelning</strong><br><br>Företaget "Ett liv i balans AB" redovisar:<br><br><table style="border-collapse:collapse;width:100%;font-size:13px;margin:8px 0"><tr style="background:var(--surface2)"><th style="padding:6px 8px;border:1px solid var(--border)">Kr</th><th style="padding:6px 8px;border:1px solid var(--border)">2024-01-01</th><th style="padding:6px 8px;border:1px solid var(--border)">2024-12-31</th></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Eget kapital</td><td style="padding:4px 8px;border:1px solid var(--border)">1 250 000</td><td style="padding:4px 8px;border:1px solid var(--border)">1 040 000</td></tr><tr style="background:var(--surface2)"><td style="padding:4px 8px;border:1px solid var(--border)">Långfristiga skulder</td><td style="padding:4px 8px;border:1px solid var(--border)">2 300 000</td><td style="padding:4px 8px;border:1px solid var(--border)">2 150 000</td></tr><tr><td style="padding:4px 8px;border:1px solid var(--border)">Kortfristiga skulder</td><td style="padding:4px 8px;border:1px solid var(--border)">48 000</td><td style="padding:4px 8px;border:1px solid var(--border)">44 000</td></tr></table>Årets vinst efter skatt: <strong>340 000 kr</strong>. Hur mycket har ägarna tagit ut i <strong>utdelning</strong> under 2024?',
+    options: ['210 000 kr','650 000 kr','364 000 kr','750 000 kr','1 040 000 kr','550 000 kr','150 000 kr'],
+    correct: [5],
+    explanation: '<div class="math-formula">EK rörelse: IB + Årets vinst &minus; Utdelning = UB &nbsp;&rarr;&nbsp; Utdelning = IB + Vinst &minus; UB</div><div class="calc-steps"><div class="calc-step"><span class="step-label">IB EK 1/1</span><span class="step-eq"></span><span class="step-res">1 250 000 kr</span></div><div class="calc-step"><span class="step-label">+ Årets vinst</span><span class="step-eq"></span><span class="step-res">+ 340 000 kr</span></div><div class="calc-step"><span class="step-label">&minus; UB EK 31/12</span><span class="step-eq"></span><span class="step-res">&minus; 1 040 000 kr</span></div><div class="calc-step"><span class="step-label">Utdelning</span><span class="step-eq">1 250 000 + 340 000 &minus; 1 040 000</span><span class="step-res">= 550 000 kr</span></div></div><div class="answer-box">Utdelning = 550 000 kr</div><div class="tip-box">EK ökar med vinsten men minskar med utdelningar. Eftersom UB EK är lägre än IB + vinst måste pengar ha delats ut.</div>'
+  },
+  {
+    id: 16,
+    topic: 'Lönsamhet',
+    type: 'single',
+    question: '<strong>Lönsamhetsmått — Skräping AB</strong><br><br>Vilket alternativ är ett korrekt <strong>lönsamhetsmått</strong> för år 5?<br><br><table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0"><tr style="background:var(--surface2)"><th style="padding:4px 8px;border:1px solid var(--border)">Resultaträkning</th><th style="padding:4px 8px;border:1px solid var(--border)">År 5</th></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Intäkter</td><td style="padding:3px 8px;border:1px solid var(--border)">16 235 000</td></tr><tr style="background:var(--surface2)"><td style="padding:3px 8px;border:1px solid var(--border)">KSV</td><td style="padding:3px 8px;border:1px solid var(--border)">11 420 000</td></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Övriga rörelsekostnader</td><td style="padding:3px 8px;border:1px solid var(--border)">3 835 800</td></tr><tr style="background:var(--surface2)"><td style="padding:3px 8px;border:1px solid var(--border)"><strong>Rörelseresultat</strong></td><td style="padding:3px 8px;border:1px solid var(--border)"><strong>979 200</strong></td></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Räntekostnader</td><td style="padding:3px 8px;border:1px solid var(--border)">120 000</td></tr><tr style="background:var(--surface2)"><td style="padding:3px 8px;border:1px solid var(--border)">Resultat eft. fin. poster</td><td style="padding:3px 8px;border:1px solid var(--border)">859 200</td></tr><tr><td style="padding:3px 8px;border:1px solid var(--border)">Totala tillgångar</td><td style="padding:3px 8px;border:1px solid var(--border)">4 214 000</td></tr><tr style="background:var(--surface2)"><td style="padding:3px 8px;border:1px solid var(--border)">Eget kapital</td><td style="padding:3px 8px;border:1px solid var(--border)">3 432 000</td></tr></table>',
+    options: ['Rörelsemarginal som är exakt 4 %','Intäkter som är 16 235 000 kr','Räntabilitet på totalt kapital som är ca 12,13 %','Soliditet som är ca 81 %','Resultat efter finansiella poster som är 859 200 kr','Räntabilitet på eget kapital som är exakt 42 %','Räntabilitet på totalt kapital som är ca 23,2 %'],
+    correct: [6],
+    explanation: '<div class="math-formula">Räntabilitet tot. kap. = Rörelseresultat &divide; Totala tillgångar</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Rt tot. kapital</span><span class="step-eq">979 200 &divide; 4 214 000</span><span class="step-res">= 23,2% ✓</span></div><div class="calc-step"><span class="step-label">Rörelsemarginal</span><span class="step-eq">979 200 &divide; 16 235 000</span><span class="step-res">= 6% (ej 4%)</span></div><div class="calc-step"><span class="step-label">Soliditet</span><span class="step-eq">3 432 000 &divide; 4 214 000 = 81% &mdash; soliditetsmått, ej lönsamhet</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Rt EK</span><span class="step-eq">859 200 &divide; 3 432 000 = 25% (ej 42%)</span><span class="step-res"></span></div></div><div class="answer-box">Räntabilitet på totalt kapital &asymp; 23,2% ✓</div>'
+  },
+  {
+    id: 17,
+    topic: 'Kostnadsanalys',
+    type: 'single',
+    question: '<strong>Resultatplanering — kritisk volym och säkerhetsmarginal</strong><br><br>Ett företag redovisar följande siffror för 2024:<br><ul style="margin:8px 0;padding-left:20px;"><li>Verksamhetsvolym: 524 000 st</li><li>Totalt rörliga kostnader: 5 764 000 kr</li><li>Totalt fasta kostnader: 2 120 000 kr</li><li>Totala intäkter: 8 908 000 kr</li></ul>Beräkna den <strong>kritiska volymen</strong> och <strong>säkerhetsmarginalen i volym</strong>.',
+    options: ['Den kritiska volymen är ca 266 890 st och säkerhetsmarginalen i volym är ca 257 110 st','Den kritiska volymen är ca 353 333 st och säkerhetsmarginalen i volym är ca 170 667 st','Den kritiska volymen är ca 444 660 st och säkerhetsmarginalen i volym är ca 79 340 st','Den kritiska volymen är ca 410 000 st och säkerhetsmarginalen i volym är ca 114 000 st','Den kritiska volymen är ca 384 000 st och säkerhetsmarginalen i volym är ca 140 000 st','Den kritiska volymen är ca 389 446 st och säkerhetsmarginalen i volym är ca 134 554 st'],
+    correct: [1],
+    explanation: '<div class="math-formula">Kritisk volym = Fasta &divide; TB/st &nbsp;&bull;&nbsp; Säkerhetsmarginal = Faktisk &minus; Kritisk</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Pris/st</span><span class="step-eq">8 908 000 &divide; 524 000</span><span class="step-res">= 17 kr/st</span></div><div class="calc-step"><span class="step-label">Rörlig/st</span><span class="step-eq">5 764 000 &divide; 524 000</span><span class="step-res">= 11 kr/st</span></div><div class="calc-step"><span class="step-label">TB/st</span><span class="step-eq">17 &minus; 11</span><span class="step-res">= 6 kr/st</span></div><div class="calc-step"><span class="step-label">Kritisk volym</span><span class="step-eq">2 120 000 &divide; 6</span><span class="step-res">= 353 333 st</span></div><div class="calc-step"><span class="step-label">Säkerhetsm.</span><span class="step-eq">524 000 &minus; 353 333</span><span class="step-res">= 170 667 st</span></div></div><div class="answer-box">Kritisk volym &asymp; 353 333 st &bull; Säkerhetsmarginal &asymp; 170 667 st</div>'
+  },
+  {
+    id: 18,
+    topic: 'Marknadsföring',
+    type: 'single',
+    question: '<strong>4P — Marknadsföringsmixen</strong><br><br>Modellen 4P är central inom operativ marknadsföring. Välj det alternativ som <strong>helt korrekt</strong> beskriver vad de fyra P:na innebär.',
+    options: [
+      'PROCESS (upplevelse vid köp), PRODUKT (kunderbjudande), PLATS (där kunden använder produkten) och PÅVERKAN (kommunikation)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (där kunden använder produkten) och PÅVERKAN (faktorer som gör produkten unik)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (där kunden använder produkten) och PÅVERKAN (kommuniceras och förmår att köpa)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (det sätt och sammanhang t.ex. butik i vilket produkt/tjänst görs tillgänglig) och PÅVERKAN (kommuniceras och förmår att köpa)',
+      'PRIS (vad kunden betalar), PRODUKT (kunderbjudande), PLATS (det sätt och sammanhang t.ex. butik i vilket produkt/tjänst görs tillgänglig) och PÅTAGLIGHET (signalerar kvalitet)',
+      'PRIS (vad kunden betalar), PERSONAL (kompetens), PLATS (där kunden använder produkten) och PÅVERKAN (kommuniceras och förmår att köpa)',
+    ],
+    correct: [3],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">PRIS</span><span class="step-eq">Det kunden betalar &mdash; prissättningsstrategi</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">PRODUKT</span><span class="step-eq">Kunderbjudande i form av fysisk produkt och/eller tjänst</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">PLATS</span><span class="step-eq">Det sätt och sammanhang (t.ex. butik) vari produkt/tjänst görs tillgänglig</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">PÅVERKAN</span><span class="step-eq">Hur erbjudandet kommuniceras och förmår kunder att köpa</span><span class="step-res"></span></div></div><div class="tip-box">Plats &ne; var kunden <em>använder</em> produkten &mdash; det är distributionskanalen som avses. Påverkan &ne; vad som gör produkten unik &mdash; det handlar om kommunikation.</div>'
+  },
+  {
+    id: 19,
+    topic: 'Kalkylering',
+    type: 'single',
+    question: '<strong>Självkostnad och marginal</strong><br><br>Ett företag producerar och säljer en produkt i stora serier. Uppgifter för 2024:<br><ul style="margin:8px 0;padding-left:20px;"><li>Producerad och såld volym: 540 000 st</li><li>Intäkter totalt: 5 400 000 kr</li><li>Fasta kostnader totalt: 1 260 000 kr</li><li>Rörliga kostnader totalt: 3 600 000 kr</li></ul>Beräkna produktens <strong>självkostnad enligt divisionsmetoden</strong> och <strong>marginal i %</strong>.',
+    options: ['Självkostnad 11 kr/st och marginalen exakt 12 %','Självkostnad 9 kr/st och marginalen exakt 10 %','Självkostnad 8 kr/st och marginalen exakt 20 %','Självkostnad 9 kr/st och marginalen exakt 11,5 %','Självkostnad 9 kr/st och marginalen ca 11,1 %','Självkostnad ca 8,50 kr/st och marginalen exakt 15 %'],
+    correct: [1],
+    explanation: '<div class="math-formula">Divisionsmetoden: SK = (Fasta + Rörliga) &divide; Volym</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Totala kostn.</span><span class="step-eq">1 260 000 + 3 600 000</span><span class="step-res">= 4 860 000 kr</span></div><div class="calc-step"><span class="step-label">Självkostnad/st</span><span class="step-eq">4 860 000 &divide; 540 000</span><span class="step-res">= 9 kr/st</span></div><div class="calc-step"><span class="step-label">Pris/st</span><span class="step-eq">5 400 000 &divide; 540 000</span><span class="step-res">= 10 kr/st</span></div><div class="calc-step"><span class="step-label">Marginal</span><span class="step-eq">(10 &minus; 9) &divide; 10</span><span class="step-res">= 10%</span></div></div><div class="answer-box">SK = 9 kr/st &bull; Marginal = 10%</div><div class="tip-box">Divisionsmetoden: alla kostnader fördelas lika per enhet &mdash; passar enproduktföretag.</div>'
+  },
+  {
+    id: 20,
+    topic: 'Investering',
+    type: 'single',
+    question: '<strong>Investeringskalkyl</strong><br><br>Uppgifter för en investering:<br><ul style="margin:10px 0;padding-left:20px;"><li>Grundinvestering (G): 2 250 000 kr</li><li>Kalkylränta (r): 5 %</li><li>Ekonomisk livslängd (n): 7 år</li><li>Restvärde (R): 100 000 kr</li><li>Bedömda årliga utbetalningar år 1–7: 190 000 kr</li><li>Bedömda årliga inbetalningar år 1–5: 650 000 kr</li><li>Bedömda årliga inbetalningar år 6–7: 450 000 kr</li></ul>Använd <strong>kapitalvärdemetoden</strong> och ange investeringens kapitalvärde.',
+    options: ['Kapitalvärdet är 451 741 kr','Kapitalvärdet är 284 683 kr','Kapitalvärdet är 819 679 kr','Kapitalvärdet är 191 434 kr','Kapitalvärdet är 109 207 kr'],
+    correct: [3],
+    explanation: '<div class="math-formula">KV = &Sigma; NV(kassaflöden) &minus; Grundinvestering (G)</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Netto år 1&ndash;5</span><span class="step-eq">650 000 &minus; 190 000</span><span class="step-res">= 460 000 kr/år</span></div><div class="calc-step"><span class="step-label">Netto år 6&ndash;7</span><span class="step-eq">450 000 &minus; 190 000</span><span class="step-res">= 260 000 kr/år</span></div><div class="calc-step"><span class="step-label">NV(460 000, å1&ndash;5)</span><span class="step-eq">460 000 &times; 4,329</span><span class="step-res">= 1 991 340 kr</span></div><div class="calc-step"><span class="step-label">NV(260 000, å6&ndash;7)</span><span class="step-eq">260 000 &times; (5,786 &minus; 4,329)</span><span class="step-res">= 378 820 kr</span></div><div class="calc-step"><span class="step-label">NV(Restvärde)</span><span class="step-eq">100 000 &times; 0,711</span><span class="step-res">= 71 100 kr</span></div><div class="calc-step"><span class="step-label">&Sigma; NV inflöden</span><span class="step-eq">1 991 340 + 378 820 + 71 100</span><span class="step-res">= 2 441 260 kr</span></div><div class="calc-step"><span class="step-label">Kapitalvärde</span><span class="step-eq">2 441 260 &minus; 2 250 000</span><span class="step-res">&asymp; 191 434 kr</span></div></div><div class="answer-box">KV &asymp; 191 434 kr &mdash; Positivt &rarr; Lönsam investering vid 5%</div>'
+  },
+  {
+    id: 21,
+    topic: 'Kostnadsanalys',
+    type: 'single',
+    question: '<strong>Kritisk volym</strong><br><br>Vilket av följande påståenden är <strong>korrekt</strong> när det gäller ett företags kritiska volym?',
+    options: [
+      'När företaget sänker produktens rörliga kostnad per st blir den kritiska volymen högre',
+      'När företaget minskar den totala fasta kostnaden blir den kritiska volymen högre',
+      'När företaget ökar den totala fasta kostnaden blir den kritiska volymen lägre',
+      'När företaget sänker produktens pris/st blir den kritiska volymen lägre',
+      'När företaget sänker produktens pris/st blir den kritiska volymen högre',
+    ],
+    correct: [4],
+    explanation: '<div class="math-formula">Kritisk volym = Fasta kostnader &divide; TB per st &nbsp;&bull;&nbsp; TB/st = Pris/st &minus; Rörlig/st</div><div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 1</span><span class="step-eq">Sänkt rörlig/st &rarr; högre TB/st &rarr; KV minskar (ej ökar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 2</span><span class="step-eq">Minskad fast kostnad &rarr; KV minskar (ej ökar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 3</span><span class="step-eq">Ökad fast kostnad &rarr; KV ökar (ej minskar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 4</span><span class="step-eq">Sänkt pris &rarr; lägre TB/st &rarr; KV ökar (ej minskar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">✓ Alt 5</span><span class="step-eq">Sänkt pris &rarr; lägre TB/st &rarr; F/TB &uarr; &rarr; KV ökar</span><span class="step-res"></span></div></div><div class="answer-box">Sänkt pris/st &rarr; Kritisk volym ökar ✓</div>'
+  },
+];
+
+const questions3 = [
+  {
+    id: 1, topic: 'Hållbarhet', type: 'single',
+    question: 'I januari 2011 skrev forskarna Michael Porter och Mark R Kramer en artikel i vilken de lanserade ett nytt begrepp som kopplar samman företagets strategi med socialt ansvarstagande. I artikeln menar man att företag i stället för att se socialt ansvarstagande som "ett nödvändigt ont" skall låta detta ingå i företagets affärsmodell för ökad konkurrenskraft och lönsamhet. Vad är benämningen på detta begrepp?',
+    options: ['CSV - Creating Shared Value','CSV - Corporate Shared Value','FSV - Finding Shared Value','CSR - Corporate Social Responsibility','CSA - Creating Shared Assets','CCV - Co Creating Value'],
+    correct: [0],
+    explanation: '<div class="tip-box"><strong>CSV = Creating Shared Value</strong> lanserades av Porter &amp; Kramer 2011 i Harvard Business Review. Tanken är att socialt ansvarstagande ska vara en del av affärsmodellen — inte en kostnad — och att företag kan skapa värde för både sig själva och samhället samtidigt.</div><div class="answer-box">CSV — Creating Shared Value ✓</div>'
+  },
+  {
+    id: 2, topic: 'Kalkylering', type: 'single',
+    question: 'Ett litet företag sålde år 2024 220 000 produkter vilket gav intäkter på 2 750 000 kr. Vidare kan man från resultaträkningen utläsa att företaget 2024 har haft fasta försäljnings- och personalkostnader på tillsammans 480 000 kr samt rörliga materialkostnader på 660 000 kr. Företaget har bestämt att den s k normalvolymen skall vara 240 000 st. Markera rätt värde för självkostnaden per styck baserat på uppgifterna ovan enligt Normalmetoden.',
+    options: ['Ca 6,36 kr/st','Ca 8,14 kr/st','Ca 5,83 kr/st','Exakt 8 kr/st','Exakt 7 kr/st','Ca 7,31 kr/st','Exakt 5 kr/st','Exakt 6 kr/st'],
+    correct: [6],
+    explanation: '<div class="math-formula">Normalmetoden: Självkostnad = RK/st (faktisk) + FK/st (normalvolym)</div><div class="calc-steps"><div class="calc-step"><span class="step-label">RK per st</span><span class="step-eq">660 000 &divide; 220 000</span><span class="step-res">= 3 kr/st</span></div><div class="calc-step"><span class="step-label">FK per st (normal)</span><span class="step-eq">480 000 &divide; 240 000</span><span class="step-res">= 2 kr/st</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">3 + 2</span><span class="step-res">= 5 kr/st</span></div></div><div class="tip-box">Normalmetoden: fasta kostnader fördelas med <em>normalvolymen</em> (240 000), inte faktisk volym (220 000).</div><div class="answer-box">Exakt 5 kr/st ✓</div>'
+  },
+  {
+    id: 3, topic: 'Resultatplanering', type: 'single',
+    question: 'Ett företag redovisar följande siffror för år 2023 och 2024:<br><br>2024: Volym 383 000 st, Intäkter 7 277 000 kr, Kostnader 5 886 000 kr<br>2023: Volym 364 000 st, Intäkter 6 916 000 kr, Kostnader 5 658 000 kr<br><br>Beräkna rörlig kostnad per st och den kritiska volymen för år 2024. Vi antar att de rörliga kostnaderna är proportionella och att de fasta kostnaderna är helt fasta.',
+    options: ['Rörlig kostnad per st är 18 kr och den kritiska volymen är ca 253 660 st','Rörlig kostnad per st är 12 kr och den kritiska volymen är ca 184 286 st','Rörlig kostnad per st är 4 kr och den kritiska volymen är ca 75 890 st','Rörlig kostnad per st är 14 kr och den kritiska volymen är ca 184 286 st','Rörlig kostnad per st är 11,50 kr och den kritiska volymen är ca 123 440 st','Rörlig kostnad per st är 12 kr och den kritiska volymen är ca 199 375 st','Rörlig kostnad per st är 6,50 kr och den kritiska volymen är ca 125 890 st','Rörlig kostnad per st är 9,50 kr och den kritiska volymen är ca 65 890 st','Rörlig kostnad per st är 12 kr/st och den kritiska volymen är ca 115 452 st'],
+    correct: [1],
+    explanation: '<div class="math-formula">High-Low metod: RK/st = &Delta;Kostnad &divide; &Delta;Volym</div><div class="calc-steps"><div class="calc-step"><span class="step-label">&Delta; Kostnad</span><span class="step-eq">5 886 000 &minus; 5 658 000</span><span class="step-res">= 228 000 kr</span></div><div class="calc-step"><span class="step-label">&Delta; Volym</span><span class="step-eq">383 000 &minus; 364 000</span><span class="step-res">= 19 000 st</span></div><div class="calc-step"><span class="step-label">RK/st</span><span class="step-eq">228 000 &divide; 19 000</span><span class="step-res">= 12 kr/st</span></div><div class="calc-step"><span class="step-label">FK (fasta)</span><span class="step-eq">5 886 000 &minus; 12 &times; 383 000</span><span class="step-res">= 1 290 000 kr</span></div><div class="calc-step"><span class="step-label">Pris/st 2024</span><span class="step-eq">7 277 000 &divide; 383 000</span><span class="step-res">= 19 kr/st</span></div><div class="calc-step"><span class="step-label">TB/st</span><span class="step-eq">19 &minus; 12</span><span class="step-res">= 7 kr/st</span></div><div class="calc-step"><span class="step-label">Kritisk volym</span><span class="step-eq">1 290 000 &divide; 7</span><span class="step-res">&asymp; 184 286 st</span></div></div><div class="answer-box">RK = 12 kr/st &nbsp;&bull;&nbsp; KV &asymp; 184 286 st ✓</div>'
+  },
+  {
+    id: 4, topic: 'Grundbegrepp', type: 'single',
+    question: 'I företaget "Glory days AB" inträffar följande händelser:<br><br>2023-12-26: Alla "Fire"-gitarrer tar slut i butik/lager<br>2024-01-02: Beställer 20 "Fire"-gitarrer, inköpspris 5 000 kr/st (ex moms)<br>2024-03-01: Gitarrerna anländer med faktura<br>2024-05-01: Fakturan betalas<br>2024-12-10: Beställer ytterligare 15 "Fire" för leverans i början av 2025<br>2024-12-31: Har sålt 17 st för 10 000 kr/st<br><br>Till vilket belopp uppgick <strong>utgiften</strong> för "Fire"-gitarrer under år 2024?',
+    options: ['75 000 kr','125 000 kr','85 000 kr','175 000 kr','100 000 kr','56 000 kr','15 000 kr'],
+    correct: [4],
+    explanation: '<div class="tip-box"><strong>Utgift</strong> = åtagandet att betala uppstår vid leverans/faktura — inte vid beställning och inte vid betalning.<br>Utbetalning = när pengarna faktiskt lämnar kontot.</div><div class="calc-steps"><div class="calc-step"><span class="step-label">2024-03-01</span><span class="step-eq">20 gitarrer levereras med faktura &rarr; UTGIFT uppstår</span><span class="step-res">20 &times; 5 000 = 100 000 kr</span></div><div class="calc-step"><span class="step-label">2024-12-10</span><span class="step-eq">Beställning 15 st, leverans 2025 &rarr; ingen utgift 2024</span><span class="step-res">0 kr</span></div><div class="calc-step"><span class="step-label">2024-05-01</span><span class="step-eq">Betalning &rarr; UTBETALNING (ej utgift)</span><span class="step-res">—</span></div></div><div class="answer-box">Utgift 2024 = 100 000 kr ✓</div>'
+  },
+  {
+    id: 5, topic: 'Investering', type: 'single',
+    question: 'Företaget Braarmaturer AB planerar en investering i en ny monteringslinje. Priset inklusive installation: 2 100 000 kr. Ekonomisk livslängd: 5 år. Restvärde: 200 000 kr. Besparingar (inbetalningar): 650 000 kr/år. Service och underhåll (utbetalningar): 190 000 kr/år. Kalkylränta: 3 %. Använd kapitalvärdemetoden och ange investeringens kapitalvärde.',
+    options: ['Kapitalvärdet/Nuvärdet är ca 819 000 kr','Kapitalvärdet/Nuvärdet är ca 284 000 kr','Kapitalvärdet/Nuvärdet är ca 222 000 kr','Kapitalvärdet/Nuvärdet är ca 555 000 kr','Kapitalvärdet/Nuvärdet är ca 348 000 kr','Kapitalvärdet/Nuvärdet är ca 100 000 kr','Kapitalvärdet/Nuvärdet är ca 451 000 kr','Kapitalvärdet/Nuvärdet är ca 179 000 kr'],
+    correct: [7],
+    explanation: '<div class="math-formula">KV = NV(nettokassaflöden) + NV(restvärde) &minus; G</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Netto per år</span><span class="step-eq">650 000 &minus; 190 000</span><span class="step-res">= 460 000 kr/år</span></div><div class="calc-step"><span class="step-label">Annuitetsfaktor</span><span class="step-eq">5 år, 3% &rarr; tabell</span><span class="step-res">= 4,580</span></div><div class="calc-step"><span class="step-label">NV kassaflöden</span><span class="step-eq">460 000 &times; 4,580</span><span class="step-res">= 2 106 800 kr</span></div><div class="calc-step"><span class="step-label">NV-faktor år 5</span><span class="step-eq">1 &divide; 1,03&sup5; = 0,863</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">NV restvärde</span><span class="step-eq">200 000 &times; 0,863</span><span class="step-res">= 172 600 kr</span></div><div class="calc-step"><span class="step-label">Kapitalvärde</span><span class="step-eq">2 106 800 + 172 600 &minus; 2 100 000</span><span class="step-res">&asymp; 179 400 kr</span></div></div><div class="answer-box">KV &asymp; 179 000 kr ✓</div>'
+  },
+  {
+    id: 6, topic: 'Nyckeltal', type: 'single',
+    question: 'Här nedan visas nyckeltal för företaget IT-lösningar AB (2024):<br><br>Vinstmarginal: 4,8% &nbsp;|&nbsp; Kassalikviditet: 108% &nbsp;|&nbsp; Soliditet: 26,5% &nbsp;|&nbsp; Skuldsättningsgrad: 2,7<br>Avkastning eget kapital: 52% &nbsp;|&nbsp; Avkastning totalt kapital: 13,8% &nbsp;|&nbsp; Anställda: 123<br><br>Om företagets totala värde på Eget kapital och skulder 2024-12-31 var 28 546 789 kr, vad var då värdet på Eget kapital vid samma tidpunkt?',
+    options: ['Ca 7 001 367 kr','Ca 5 902 546 kr','Ca 7 362 749 kr','Ca 6 564 899 kr','Ca 8 572 345 kr','Ca 7 965 476 kr','Ca 7 564 899 kr'],
+    correct: [6],
+    explanation: '<div class="math-formula">Soliditet = Eget kapital &divide; Totalt kapital &times; 100%</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Soliditet</span><span class="step-eq">26,5% = 0,265</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Eget kapital</span><span class="step-eq">28 546 789 &times; 0,265</span><span class="step-res">= 7 564 899 kr</span></div></div><div class="answer-box">Eget kapital &asymp; 7 564 899 kr ✓</div>'
+  },
+  {
+    id: 7, topic: 'Marknadsföring', type: 'single',
+    question: 'Vilket av nedanstående beskrivningar är helt korrekt när det gäller ett företags arbete med segmentering och operativ marknadsföring? Markera korrekt svar.',
+    options: ['Segmentering går ut på att indela marknaden i relevanta delmarknader, identifiera framgångsfaktorer och välja delmarknad. Den operativa marknadsföringen identifierar konkurrensmedlen genom "TAM/SAM/SOM".','Segmentering går ut på att få produkten att ses på ett visst sätt. Den operativa marknadsföringen identifierar konkurrensmedlen genom 4P: Produkt, Plats, Pris och Påverkan.','Segmentering går ut på att identifiera företagets alla intressenter och bedöma hur stor påverkan dessa har. Den operativa marknadsföringen genomför åtgärder kopplade till denna bedömning.','Segmentering går ut på att indela marknaden i relevanta och meningsfulla delmarknader, identifiera framgångsfaktorer och välja vilken delmarknad som skall fokuseras. Den operativa marknadsföringen identifierar konkurrensmedlen genom 4P: Produkt, Plats, Pris och Påverkan.','Segmentering går ut på att indela marknaden i relevanta delmarknader, identifiera framgångsfaktorer och välja delmarknad. Den operativa marknadsföringen identifierar konkurrensmedlen genom 4P: Plats, Positionering, Pris och Påverkan.'],
+    correct: [3],
+    explanation: '<div class="tip-box"><strong>Segmentering</strong> = dela upp marknaden i meningsfulla delar, identifiera framgångsfaktorer, välja segment att fokusera på.<br><strong>Operativ marknadsföring</strong> = arbeta med de 4P:na för det valda segmentet: <em>Produkt, Plats, Pris, Påverkan</em>.<br><br>Vanliga felval: Alt 1 blandar in TAM/SAM/SOM (marknadsanalys). Alt 2 blandar ihop segmentering med positionering. Alt 5 byter ut Produkt mot Positionering.</div><div class="answer-box">Alternativ 4 — Segmentering + 4P (Produkt, Plats, Pris, Påverkan) ✓</div>'
+  },
+  {
+    id: 8, topic: 'Resultatplanering', type: 'single',
+    question: 'Ett företag hade sålt 240 000 produkter med totala intäkter på 4 560 000 kr. Rörliga materialkostnader: 3 600 000 kr. Fasta kostnader: 750 000 kr. Beräkna den kritiska volymen.',
+    options: ['Den kritiska volymen är 187 500 st','Den kritiska volymen är 169 250 st','Den kritiska volymen är 222 250 st','Den kritiska volymen är 195 350 st','Den kritiska volymen är 122 500 st','Den kritiska volymen är 269 250 st','Den kritiska volymen är 253 660 st','Den kritiska volymen är 139 250 st'],
+    correct: [0],
+    explanation: '<div class="math-formula">Kritisk volym = Fasta kostnader &divide; TB per st &nbsp;&bull;&nbsp; TB/st = Pris/st &minus; RK/st</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Pris per st</span><span class="step-eq">4 560 000 &divide; 240 000</span><span class="step-res">= 19 kr/st</span></div><div class="calc-step"><span class="step-label">RK per st</span><span class="step-eq">3 600 000 &divide; 240 000</span><span class="step-res">= 15 kr/st</span></div><div class="calc-step"><span class="step-label">TB per st</span><span class="step-eq">19 &minus; 15</span><span class="step-res">= 4 kr/st</span></div><div class="calc-step"><span class="step-label">Kritisk volym</span><span class="step-eq">750 000 &divide; 4</span><span class="step-res">= 187 500 st</span></div></div><div class="answer-box">Kritisk volym = 187 500 st ✓</div>'
+  },
+  {
+    id: 9, topic: 'Budget', type: 'match',
+    question: 'Ett nystartat företag sammanställer sina huvudbudgetar för år 1. Ange vilka värden som skall skrivas in i budgetmallen på ställena markerade med A, B och C.<br><br><strong>Likviditetsbudget:</strong> Likvida medel 1/1 = 0 kr, Inbetalningar totalt = 1 120 000 kr, Utbetalningar totalt = 690 000 kr, Likvida medel 31/12 = <strong>A</strong><br><strong>Resultatbudget:</strong> Intäkter = 670 000 kr, Kostnader = 657 000 kr, Resultat = <strong>B</strong><br><strong>Budgeterad balansräkning:</strong> Tillgångar = 430 000 kr (Kassa = 430 000), Skulder och eget kapital = 430 000, Banklån = 267 000, Eget kapital = <strong>C</strong>',
+    pairs: [
+      {label: 'A = Likvida medel 31/12 år 1', answer: '430 000 kr'},
+      {label: 'B = Resultat (Resultatbudget)', answer: '13 000 kr'},
+      {label: 'C = Eget kapital (Balansräkning)', answer: '163 000 kr'}
+    ],
+    options: ['430 000 kr','153 000 kr','13 000 kr','148 000 kr','163 000 kr','15 000 kr','248 000 kr'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">A (Likviditet)</span><span class="step-eq">0 + 1 120 000 &minus; 690 000</span><span class="step-res">= 430 000 kr</span></div><div class="calc-step"><span class="step-label">B (Resultat)</span><span class="step-eq">670 000 &minus; 657 000</span><span class="step-res">= 13 000 kr</span></div><div class="calc-step"><span class="step-label">C (Eget kapital)</span><span class="step-eq">430 000 &minus; 267 000 (banklån)</span><span class="step-res">= 163 000 kr</span></div></div><div class="answer-box">A = 430 000 kr &nbsp;|&nbsp; B = 13 000 kr &nbsp;|&nbsp; C = 163 000 kr ✓</div>'
+  },
+  {
+    id: 10, topic: 'Nyckeltal', type: 'single',
+    question: 'Företaget Maskinen AB redovisar Resultat- och Balansräkning för år 2024 (i bifogat dokument). Vad var företagets Rörelsemarginal för år 2024?',
+    options: ['Ca 7,5 %','Ca 8,1 %','Ca 10,3 %','Ca 4,7 %','Ca 8,9 %','Ca 6,9 %','Ca 5,1 %','Ca 9,4 %'],
+    correct: [4],
+    explanation: '<div class="math-formula">Rörelsemarginal = Rörelseresultat &divide; Nettoomsättning &times; 100%</div><div class="tip-box">Denna fråga kräver Maskinen AB:s resultaträkning för 2024 (bifogat dokument i tentamen). Rörelsemarginal beräknas som rörelseresultat (före finansiella poster) dividerat med nettoomsättningen. Rätt svar är ca 8,9 %.</div><div class="answer-box">Rörelsemarginal &asymp; 8,9 % ✓</div>'
+  },
+  {
+    id: 11, topic: 'Företagsformer', type: 'match',
+    question: 'Matcha beskrivning med korrekt företagsform.',
+    pairs: [
+      {label: 'Är en juridisk person och kräver en total ägarinsats på minst 25 000 kr', answer: 'Privat aktiebolag'},
+      {label: 'Är inte en juridisk person', answer: 'Enskild firma'}
+    ],
+    options: ['Publikt aktiebolag','Privat aktiebolag','Enskild firma','Handelsbolag','Kommanditbolag'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Privat AB</span><span class="step-eq">Juridisk person, kräver minst 25 000 kr aktiekapital</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Publikt AB</span><span class="step-eq">Juridisk person, kräver minst 500 000 kr</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Enskild firma</span><span class="step-eq">INTE juridisk person — ägaren och firman är juridiskt samma</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Handelsbolag</span><span class="step-eq">Juridisk person (kan äga tillgångar, ingå avtal)</span><span class="step-res"></span></div></div><div class="answer-box">Juridisk + 25 000 kr = Privat AB &nbsp;|&nbsp; Ej juridisk = Enskild firma ✓</div>'
+  },
+  {
+    id: 12, topic: 'Kalkylering', type: 'single',
+    question: 'Företaget "SYSTAB" har beräknat självkostnaden för ett nytt kretskort (tillverkat av återvunnet material) till 487 kr med påläggsmetod. Företaget har ett mål att nå en rörelsemarginal på 12 % för hela företaget. Vilket pris skall sättas på kretskortet för att leva upp till kravet om 12 % rörelsemarginal?',
+    options: ['Exakt 504 kr','Exakt 732 kr','Ca 592 kr','Ca 553 kr','Ca 656 kr','Ca 456 kr','Ca 532 kr','Exakt 581 kr'],
+    correct: [3],
+    explanation: '<div class="math-formula">Rörelsemarginal = (Pris &minus; Självkostnad) &divide; Pris = 12%</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Formel</span><span class="step-eq">(P &minus; 487) &divide; P = 0,12</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Omforma</span><span class="step-eq">P &minus; 487 = 0,12P &rarr; 0,88P = 487</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">Pris</span><span class="step-eq">487 &divide; 0,88</span><span class="step-res">&asymp; 553 kr</span></div></div><div class="tip-box">Rörelsemarginal beräknas på priset (försäljningspriset), inte på kostnaden. Täckningsgradslogik: 88% av priset täcker självkostnaden, 12% är vinst.</div><div class="answer-box">Pris &asymp; 553 kr ✓</div>'
+  },
+  {
+    id: 13, topic: 'Grundbegrepp', type: 'match',
+    question: 'Koppla ihop termerna nedan med rätt förklaring: Lönsamhet, Resultat, Inkomst, Kostnad, Intäkt, Utgift',
+    pairs: [
+      {label: 'Värdet av den försäljning som företaget genererat under en viss tidsperiod kallas...', answer: 'Intäkt'},
+      {label: 'Värdet av de resurser företaget förbrukar under en viss tidsperiod kallas...', answer: 'Kostnad'},
+      {label: 'Skillnaden mellan värdet av sålda produkter/tjänster och värdet av förbrukade resurser under samma period utgör företagets...', answer: 'Resultat'},
+      {label: 'Det tillfälle då företaget levererar värde till en kund kallas...', answer: 'Inkomst'}
+    ],
+    options: ['Lönsamhet','Resultat','Inkomst','Kostnad','Intäkt','Utgift'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Intäkt</span><span class="step-eq">Värdet av försäljning under perioden (periodiserat)</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Kostnad</span><span class="step-eq">Värdet av förbrukade resurser under perioden</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Resultat</span><span class="step-eq">Intäkter &minus; Kostnader</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Inkomst</span><span class="step-eq">Tidpunkten då leverans sker (försäljningstillfället)</span><span class="step-res">✓</span></div></div><div class="tip-box">Inkomst &ne; Intäkt: Inkomst är tidpunkten för affären, intäkt är periodens intjänade värde. Utgift är åtagandet att betala (fakturadatum).</div><div class="answer-box">Intäkt / Kostnad / Resultat / Inkomst ✓</div>'
+  },
+  {
+    id: 14, topic: 'Grundbegrepp', type: 'single',
+    question: 'Företaget SYSTAB konstaterade i december 2024 att kretskort till "VR" var slut i lagret. Man köpte in kretskort för 350 000 kr, levererat direkt efter årsskiftet 2025, och börjar direkt användas i produktionen. Den 1 februari beställdes nya kretskort för 72 000 kr, levererade till lagret 15 februari 2025. Den 31 mars konstateras att kretskort till ett värde av 154 500 kr finns kvar i lagret. Hur stor är <strong>kostnaden</strong> för kretskort under perioden januari–mars 2025?',
+    options: ['Kostnaden är 267 500 kr','Kostnaden är 300 100 kr','Kostnaden är 318 000 kr','Kostnaden är 172 400 kr','Kostnaden är 94 700 kr','Kostnaden är 328 900 kr','Kostnaden är 482 500 kr','Kostnaden är 300 800 kr'],
+    correct: [0],
+    explanation: '<div class="math-formula">Kostnad = Ingående lager + Inköp &minus; Utgående lager</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Ingående lager 1/1</span><span class="step-eq">Levererat direkt efter nyår, används direkt</span><span class="step-res">350 000 kr</span></div><div class="calc-step"><span class="step-label">Inköp feb</span><span class="step-eq">Levererat 15/2 till lager</span><span class="step-res">72 000 kr</span></div><div class="calc-step"><span class="step-label">Tillgängligt</span><span class="step-eq">350 000 + 72 000</span><span class="step-res">= 422 000 kr</span></div><div class="calc-step"><span class="step-label">Kvar 31/3</span><span class="step-eq">Ej förbrukade kretskort</span><span class="step-res">154 500 kr</span></div><div class="calc-step"><span class="step-label">Kostnad</span><span class="step-eq">422 000 &minus; 154 500</span><span class="step-res">= 267 500 kr</span></div></div><div class="answer-box">Kostnad jan–mar = 267 500 kr ✓</div>'
+  },
+  {
+    id: 15, topic: 'Kalkylering', type: 'single',
+    question: 'Motorsågar AB — påläggskalkyl för "Granmarodören".<br><br>Företagsdata 2024: Direkta materialkostnader 40 000 000 kr | Direkta lönekostnader 50 000 000 kr | Lagerkostnader (MO) 8 000 000 kr | Lokalkostnader m.m. (TO) 13 500 000 kr | VD/admin/försäljning/marknad (AFFO) 11 150 000 kr<br><br>Produktdata "Granmarodören": Direkt lön 1 346 kr | Direkt material 471 kr<br><br>Vad är självkostnaden för produkten?',
+    options: ['Självkostnaden är ca 2 123 kr','Självkostnaden är ca 3 743 kr','Självkostnaden är ca 2 500 kr','Självkostnaden är ca 2 760 kr','Självkostnaden är ca 1 326 kr','Självkostnaden är ca 1 124 kr','Självkostnaden är ca 1 450 kr','Självkostnaden är ca 3 234 kr'],
+    correct: [2],
+    explanation: '<div class="math-formula">Självkostnad = DM + MO + DL + TO + AFFO</div><div class="calc-steps"><div class="calc-step"><span class="step-label">MO-pålägg</span><span class="step-eq">8 000 000 &divide; 40 000 000</span><span class="step-res">= 20%</span></div><div class="calc-step"><span class="step-label">TO-pålägg</span><span class="step-eq">13 500 000 &divide; 50 000 000</span><span class="step-res">= 27%</span></div><div class="calc-step"><span class="step-label">DM</span><span class="step-eq">471 kr</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">MO</span><span class="step-eq">471 &times; 0,20</span><span class="step-res">= 94,20 kr</span></div><div class="calc-step"><span class="step-label">DL</span><span class="step-eq">1 346 kr</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">TO</span><span class="step-eq">1 346 &times; 0,27</span><span class="step-res">= 363,42 kr</span></div><div class="calc-step"><span class="step-label">Tillverkningskostnad</span><span class="step-eq">471 + 94,20 + 1 346 + 363,42</span><span class="step-res">= 2 274,62 kr</span></div><div class="calc-step"><span class="step-label">AFFO-pålägg</span><span class="step-eq">11 150 000 &divide; 111 500 000</span><span class="step-res">= 10%</span></div><div class="calc-step"><span class="step-label">AFFO</span><span class="step-eq">2 274,62 &times; 0,10</span><span class="step-res">= 227,46 kr</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">2 274,62 + 227,46</span><span class="step-res">&asymp; 2 502 kr</span></div></div><div class="answer-box">Självkostnad &asymp; 2 500 kr ✓</div>'
+  },
+  {
+    id: 16, topic: 'Affärsmodell', type: 'single',
+    question: 'Modellen NABC är bra att använda i processen för att generera affärsidé. Vad innebär N:et i modellen?',
+    options: ['Beskriver de specifika kundsegment som skall erbjudas lösning på problem.','Beskriver den anpassade marknadsmixen som skall användas.','Beskriver det sätt på vilket kundrelationer skall skapas.','Beskriver de alternativa sätt som kunden kan tillgodose sitt behov med.','Beskriver de kundbehov som skall uppfyllas d v s vilka problem som behöver lösas.','Beskriver specifikt de hållbarhetsaspekter som erbjudandet tillgodoser.','Beskriver det unika tillvägagångssätt som företaget skall möta ett kundbehov på.','Beskriver den kvantifierade kundnyttan i förhållande till kundens kostnad.'],
+    correct: [4],
+    explanation: '<div class="tip-box"><strong>NABC-modellen:</strong><br>N = <em>Need</em> — Kundbehov: vilka problem ska lösas?<br>A = <em>Approach</em> — Tillvägagångssätt: hur möter vi behovet på ett unikt sätt?<br>B = <em>Benefits</em> — Kundnytta: vilken kvantifierad nytta skapar vi?<br>C = <em>Competition</em> — Konkurrens/alternativ: hur kan kunden annars tillgodose behovet?</div><div class="answer-box">N = Need = de kundbehov (problem) som skall uppfyllas ✓</div>'
+  },
+  {
+    id: 17, topic: 'Budget', type: 'single',
+    question: 'Företaget Maskinen AB arbetar med budget för 2025. Inköpschef Lisa Svensson har tagit fram:<br><br>Budget 2025 inköp metall: 29 380 Tkr | Budget 2025 inköp plaster: 19 600 Tkr<br>Lager metall 1/1 2025: 27 300 Tkr | Lager metall 31/12 2025: 26 400 Tkr<br>Lager plast 1/1 2025: 6 420 Tkr | Lager plast 31/12 2025: 6 625 Tkr<br>Leverantörsskulder 1/1 2025: 9 550 Tkr | Leverantörsskulder 31/12 2025: 9 300 Tkr<br><br>Vad är Maskinen AB:s budget materialkostnad för metall 2025?',
+    options: ['29 650 Tkr','24 540 Tkr','39 500 Tkr','18 578 Tkr','42 400 Tkr','30 280 Tkr','23 769 Tkr','35 678 Tkr'],
+    correct: [5],
+    explanation: '<div class="math-formula">Materialkostnad = Ingående lager + Inköp &minus; Utgående lager</div><div class="calc-steps"><div class="calc-step"><span class="step-label">Ingående lager</span><span class="step-eq">Metall 1/1 2025</span><span class="step-res">27 300 Tkr</span></div><div class="calc-step"><span class="step-label">Inköp metall</span><span class="step-eq">Budget 2025</span><span class="step-res">29 380 Tkr</span></div><div class="calc-step"><span class="step-label">Utgående lager</span><span class="step-eq">Metall 31/12 2025</span><span class="step-res">26 400 Tkr</span></div><div class="calc-step"><span class="step-label">Materialkostnad</span><span class="step-eq">27 300 + 29 380 &minus; 26 400</span><span class="step-res">= 30 280 Tkr</span></div></div><div class="tip-box">Leverantörsskulder och plastdata behövs inte för materialkostnad metall — de är fällor i frågan.</div><div class="answer-box">Materialkostnad metall = 30 280 Tkr ✓</div>'
+  },
+  {
+    id: 18, topic: 'Kalkylering', type: 'single',
+    question: 'Ett företag tillämpar påläggskalkylering. Resultaträkning 2024 visar:<br>Direkta materialkostnader: 4 670 000 kr | Direkta lönekostnader: 6 340 000 kr | Materialomkostnader (MO): 607 100 kr | Tillverkningsomkostnader (TO): 1 585 000 kr | Adm. &amp; försäljningsomkostnader (AFFO): 2 772 441 kr<br><br>Beräkna självkostnad för en produkt med: Direkt material 125 kr, Direkt lön 102 kr.',
+    options: ['Produktens självkostnad är ca 298 kr/st','Produktens självkostnad är ca 255 kr/st','Produktens självkostnad är ca 158 kr/st','Produktens självkostnad är ca 231 kr/st','Produktens självkostnad är ca 325 kr/st','Produktens självkostnad är ca 535 kr/st','Produktens självkostnad är ca 247 kr/st','Produktens självkostnad är ca 412 kr/st'],
+    correct: [4],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">MO-pålägg</span><span class="step-eq">607 100 &divide; 4 670 000</span><span class="step-res">= 13%</span></div><div class="calc-step"><span class="step-label">TO-pålägg</span><span class="step-eq">1 585 000 &divide; 6 340 000</span><span class="step-res">= 25%</span></div><div class="calc-step"><span class="step-label">DM</span><span class="step-eq">125 kr</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">MO</span><span class="step-eq">125 &times; 0,13</span><span class="step-res">= 16,25 kr</span></div><div class="calc-step"><span class="step-label">DL</span><span class="step-eq">102 kr</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label">TO</span><span class="step-eq">102 &times; 0,25</span><span class="step-res">= 25,50 kr</span></div><div class="calc-step"><span class="step-label">Tillv.kostnad</span><span class="step-eq">125 + 16,25 + 102 + 25,50</span><span class="step-res">= 268,75 kr</span></div><div class="calc-step"><span class="step-label">AFFO-pålägg</span><span class="step-eq">2 772 441 &divide; 13 202 100</span><span class="step-res">= 21%</span></div><div class="calc-step"><span class="step-label">AFFO</span><span class="step-eq">268,75 &times; 0,21</span><span class="step-res">= 56,44 kr</span></div><div class="calc-step"><span class="step-label">Självkostnad</span><span class="step-eq">268,75 + 56,44</span><span class="step-res">&asymp; 325 kr</span></div></div><div class="answer-box">Självkostnad &asymp; 325 kr/st ✓</div>'
+  },
+  {
+    id: 19, topic: 'Resultatplanering', type: 'single',
+    question: 'Vilket av nedanstående påstående är helt korrekt angående kritisk volym och säkerhetsmarginal?',
+    options: ['När ett företags rörlig kostnad per st, allt annat lika, ökar då minskar den kritiska volymen och säkerhetsmarginalen i volym ökar.','När ett företags fasta kostnad, allt annat lika, minskar då minskar den kritiska volymen och säkerhetsmarginalen i volym minskar.','När ett företags verkliga volym, allt annat lika, minskar då minskar den kritiska volymen och säkerhetsmarginalen i volym ökar.','När ett företags fasta kostnad, allt annat lika, ökar då minskar den kritiska volymen och säkerhetsmarginalen i volym ökar.','När ett företags pris, allt annat lika, minskar då minskar den kritiska volymen och säkerhetsmarginalen i volym minskar.','När ett företags pris, allt annat lika, ökar då minskar den kritiska volymen och säkerhetsmarginalen i volym ökar.'],
+    correct: [5],
+    explanation: '<div class="math-formula">KV = FK &divide; TB/st &nbsp;&bull;&nbsp; TB/st = Pris &minus; RK/st &nbsp;&bull;&nbsp; SM = Faktisk volym &minus; KV</div><div class="calc-steps"><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 1</span><span class="step-eq">Högre RK/st &rarr; lägre TB/st &rarr; KV ökar (ej minskar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 2</span><span class="step-eq">Lägre FK &rarr; KV minskar ✓, men SM ökar (ej minskar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 3</span><span class="step-eq">Lägre faktisk volym &rarr; KV oförändrad, SM minskar (ej ökar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 4</span><span class="step-eq">Högre FK &rarr; KV ökar (ej minskar)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--danger)">✗ Alt 5</span><span class="step-eq">Lägre pris &rarr; lägre TB/st &rarr; KV ökar, SM minskar (ej minskar KV)</span><span class="step-res"></span></div><div class="calc-step"><span class="step-label" style="color:var(--success)">✓ Alt 6</span><span class="step-eq">Högre pris &rarr; högre TB/st &rarr; KV minskar &rarr; SM ökar</span><span class="step-res"></span></div></div><div class="answer-box">Pris ökar &rarr; KV minskar &rarr; Säkerhetsmarginal ökar ✓</div>'
+  },
+  {
+    id: 20, topic: 'Kalkylering', type: 'match',
+    question: 'Ange vilken typ av kostnad som avses.',
+    pairs: [
+      {label: 'En kostnad som i en självkostnadskalkyl påförs med hjälp av procentuella pålägg', answer: 'Indirekt kostnad'},
+      {label: 'En kostnad som totalt sett är oförändrad när verksamhetsvolymen förändras', answer: 'Fast kostnad'},
+      {label: 'En kostnad som per styck är oförändrad när verksamhetsvolymen förändras', answer: 'Rörlig kostnad'}
+    ],
+    options: ['Rörlig kostnad','Särkostnad','Indirekt kostnad','Fast kostnad','Direkt kostnad','Samkostnad'],
+    explanation: '<div class="calc-steps"><div class="calc-step"><span class="step-label">Indirekt kostnad</span><span class="step-eq">Kan ej direkt kopplas till produkt &rarr; fördelas via pålägg (MO, TO, AFFO)</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Fast kostnad</span><span class="step-eq">Hyra, ledningslöner etc. — totalt oförändrade oavsett volym</span><span class="step-res">✓</span></div><div class="calc-step"><span class="step-label">Rörlig kostnad</span><span class="step-eq">Material, ackordslön — per styck konstant, totalt proportionell mot volym</span><span class="step-res">✓</span></div></div><div class="tip-box">Direkt kostnad = kan spåras direkt till produkt (direkt material, direkt lön). Samkostnad = gemensam kostnad för flera produkter som inte kan fördelas rättvist.</div><div class="answer-box">Indirekt / Fast / Rörlig ✓</div>'
+  },
+];
+
+// Active exam selector
+let activeExam = 1;
+let activeQuestions = questions;
+
+function selectExam(n) {
+  activeExam = n;
+  activeQuestions = n === 1 ? questions : n === 2 ? questions2 : questions3;
+  ['exam1-btn','exam2-btn','exam3-btn'].forEach((id, i) => {
+    document.getElementById(id).className = (n === i + 1)
+      ? 'btn-primary py-3 rounded-xl font-bold text-sm'
+      : 'btn-secondary py-3 rounded-xl font-bold text-sm';
+    if (n === 3 && id === 'exam3-btn') {
+      document.getElementById(id).style.gridColumn = '1/-1';
+    }
+  });
+}
+
+// Point maps per exam (for display in Läsa screen)
+const examPointMap = {
+  1: { 1:3,2:2,3:1,4:2,5:2,6:2,7:2,8:1,9:2,10:3,11:3,12:3,13:3,14:2,15:1,16:1,17:2,18:2,19:1,20:2,21:2 },
+  2: { 1:2,2:2,3:2,4:1,5:1,6:2,7:3,8:2,9:1,10:3,11:2,12:1,13:3,14:3,15:2,16:2,17:2,18:2,19:3,20:3,21:1 },
+  3: { 1:1,2:2,3:2,4:2,5:3,6:2,7:2,8:2,9:3,10:2,11:2,12:2,13:4,14:2,15:3,16:1,17:2,18:2,19:1,20:3 },
+};
+
+// State
+let currentQ = 0;
+let answers = {};
+let score = 0;
+let examStarted = false;
+
+function getTopicStyle(topic) {
+  const color = topicColors[topic] || '#374151';
+  return `background:${color}22;color:${color};border:1px solid ${color}44`;
+}
+
+function wrapTables(el) {
+  el.querySelectorAll('table').forEach(t => {
+    if (t.parentElement && t.parentElement.classList.contains('table-scroll')) return;
+    const w = document.createElement('div');
+    w.className = 'table-scroll';
+    t.parentNode.insertBefore(w, t);
+    w.appendChild(t);
+  });
+}
+
+function showStart() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-start').classList.add('active');
+}
+
+function showReadScreen() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-read').classList.add('active');
+  const cont = document.getElementById('read-content');
+  cont.innerHTML = activeQuestions.map(q => `
+    <div class="rounded-xl p-6" style="background:var(--surface);border:2px solid var(--border)">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="mono text-xs font-bold" style="color:var(--muted)">FR. ${q.id}</span>
+        <span class="topic-tag" style="${getTopicStyle(q.topic)}">${q.topic}</span>
+        <span class="mono text-xs" style="color:var(--muted)">${examPointMap[activeExam][q.id]}p poäng</span>
+      </div>
+      <div class="mb-4 text-sm leading-relaxed">${q.question}</div>
+      ${q.type === 'single' ? `
+        <div class="space-y-2">
+          ${q.options.map((o, i) => `
+            <div class="rounded-lg px-4 py-2 text-sm" style="${q.correct.includes(i) ? 'background:#dcfce7;border:2px solid var(--success);color:var(--success);font-weight:600' : 'background:var(--surface2);border:1px solid var(--border)'}">
+              ${q.correct.includes(i) ? '✓ ' : ''}${o}
+            </div>
+          `).join('')}
+        </div>
+      ` : q.type === 'match' ? `
+        <div class="space-y-2">
+          ${q.pairs.map(p => `
+            <div class="rounded-lg px-4 py-2 text-sm flex gap-3" style="background:#dcfce7;border:2px solid var(--success)">
+              <span style="color:var(--muted)">${p.label}</span>
+              <span style="color:var(--success);font-weight:700">→ ${p.answer}</span>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      <div class="explanation-box text-sm mt-4">
+        <div class="mono text-xs font-bold mb-2" style="color:var(--accent)">FÖRKLARING</div>
+        ${q.explanation}
+      </div>
+    </div>
+  `).join('');
+  wrapTables(cont);
+}
+
+function startExam() {
+  currentQ = 0;
+  answers = {};
+  score = 0;
+  examStarted = true;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-exam').classList.add('active');
+  document.getElementById('q-total').textContent = activeQuestions.length;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = activeQuestions[currentQ];
+  document.getElementById('q-num').textContent = currentQ + 1;
+  document.getElementById('progress-fill').style.width = `${(currentQ / activeQuestions.length) * 100}%`;
+  document.getElementById('live-score').textContent = score;
+  
+  const answered = answers[q.id];
+  
+  let html = `
+    <div class="flex items-center gap-3 mb-4">
+      <span class="topic-tag" style="${getTopicStyle(q.topic)}">${q.topic}</span>
+    </div>
+    <div class="text-base leading-relaxed mb-6">${q.question}</div>
+  `;
+
+  if (q.type === 'single') {
+    html += `<div class="space-y-3" id="options-container">`;
+    q.options.forEach((opt, i) => {
+      let cls = 'option-btn';
+      if (answered !== undefined) {
+        if (q.correct.includes(i)) cls += ' reveal-correct';
+        else if (answered === i) cls += ' wrong';
+      } else if (answered === i) cls += ' selected';
+      html += `<button class="${cls} w-full rounded-xl px-4 py-3 text-sm" onclick="selectSingle(${i})" ${answered !== undefined ? 'disabled' : ''}>${opt}</button>`;
+    });
+    html += `</div>`;
+  } else if (q.type === 'match') {
+    html += `<div class="space-y-4">`;
+    q.pairs.forEach((pair, pi) => {
+      const userAns = answered ? answered[pi] : undefined;
+      const isRevealed = answered !== undefined;
+      const isCorrect = userAns === pair.answer;
+      html += `
+        <div class="rounded-xl p-4" style="background:var(--surface);border:2px solid var(--border)">
+          <div class="text-sm font-medium mb-2">${pair.label}</div>
+          <select id="match-${pi}" onchange="updateMatch(${pi})" ${isRevealed ? 'disabled' : ''} class="w-full rounded-lg" style="${isRevealed ? (isCorrect ? 'border-color:var(--success);background:#dcfce7' : 'border-color:var(--danger);background:#fee2e2') : ''}">
+            <option value="">— Välj —</option>
+            ${q.options.map(o => `<option value="${o}" ${userAns === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+          ${isRevealed && !isCorrect ? `<div class="text-xs mt-1" style="color:var(--success)">✓ Rätt svar: ${pair.answer}</div>` : ''}
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  const showAnswerBtn = answered === undefined ? `<button onclick="showAnswer()" class="btn-secondary px-6 py-3 rounded-xl font-bold">VISA SVAR</button>` : '';
+  const skipBtn = answered === undefined ? `<button onclick="skipQuestion()" class="btn-secondary px-6 py-3 rounded-xl font-bold">HOPPA ÖVER</button>` : '';
+  const nextBtn = (answered !== undefined || currentQ === activeQuestions.length - 1) ?
+    `<button onclick="nextQuestion()" class="btn-primary px-8 py-3 rounded-xl font-bold">${currentQ === activeQuestions.length - 1 ? 'SE RESULTAT' : 'NÄSTA →'}</button>` :
+    `<button onclick="nextQuestion()" class="btn-secondary px-8 py-3 rounded-xl font-bold" style="opacity:0.5">NÄSTA →</button>`;
+
+  if (answered !== undefined) {
+    html += `<div class="explanation-box mt-6">${q.explanation}</div>`;
+  }
+
+  html += `<div class="flex gap-3 mt-6 flex-wrap">${showAnswerBtn}${skipBtn}${nextBtn}</div>`;
+
+  const examContent = document.getElementById('exam-content');
+  examContent.innerHTML = html;
+  wrapTables(examContent);
+}
+
+let matchSelections = {};
+
+function updateMatch(pi) {
+  const q = activeQuestions[currentQ];
+  if (!matchSelections[q.id]) matchSelections[q.id] = {};
+  const val = document.getElementById(`match-${pi}`).value;
+  matchSelections[q.id][pi] = val;
+}
+
+function selectSingle(i) {
+  const q = activeQuestions[currentQ];
+  if (answers[q.id] !== undefined) return;
+  answers[q.id] = i;
+  const pts = q.correct.includes(i) ? 1 : 0;
+  score += pts;
+  renderQuestion();
+}
+
+function showAnswer() {
+  const q = activeQuestions[currentQ];
+  if (q.type === 'single') {
+    answers[q.id] = -1; // revealed without selecting
+    renderQuestion();
+  } else if (q.type === 'match') {
+    const sel = matchSelections[q.id] || {};
+    let pts = 0;
+    q.pairs.forEach((p, pi) => {
+      if (sel[pi] === p.answer) pts++;
+    });
+    answers[q.id] = sel;
+    score += pts;
+    renderQuestion();
+  }
+}
+
+function skipQuestion() {
+  const q = activeQuestions[currentQ];
+  answers[q.id] = 'skipped';
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (currentQ < activeQuestions.length - 1) {
+    currentQ++;
+    matchSelections = {};
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-results').classList.add('active');
+
+  let grade, gradeColor;
+  if (score >= 40) { grade = '5'; gradeColor = 'var(--success)'; }
+  else if (score >= 34) { grade = '4'; gradeColor = 'var(--accent)'; }
+  else if (score >= 26) { grade = '3'; gradeColor = 'var(--warn)'; }
+  else { grade = 'U'; gradeColor = 'var(--danger)'; }
+
+  const answered = Object.entries(answers).filter(([,v]) => v !== 'skipped').length;
+  const skipped = Object.values(answers).filter(v => v === 'skipped').length;
+
+  let reviewHtml = '';
+  activeQuestions.forEach(q => {
+    const a = answers[q.id];
+    if (a === undefined || a === 'skipped') {
+      reviewHtml += `
+        <div class="rounded-xl p-4 mb-3" style="background:var(--surface);border:2px solid var(--warn)">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="mono text-xs font-bold" style="color:var(--warn)">HOPPADE ÖVER</span>
+            <span class="topic-tag" style="${getTopicStyle(q.topic)}">${q.topic}</span>
+          </div>
+          <div class="text-sm font-semibold mb-2">Fråga ${q.id}</div>
+          <div class="explanation-box text-xs">${q.explanation}</div>
+        </div>`;
+    } else if (q.type === 'single' && (a === -1 || !q.correct.includes(a))) {
+      reviewHtml += `
+        <div class="rounded-xl p-4 mb-3" style="background:var(--surface);border:2px solid var(--danger)">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="mono text-xs font-bold" style="color:var(--danger)">FEL SVAR</span>
+            <span class="topic-tag" style="${getTopicStyle(q.topic)}">${q.topic}</span>
+          </div>
+          <div class="text-sm font-semibold mb-1">Fråga ${q.id}</div>
+          ${a !== -1 ? `<div class="text-xs mb-2" style="color:var(--danger)">Ditt svar: ${q.options[a]}</div>` : ''}
+          <div class="text-xs mb-2" style="color:var(--success)">✓ Rätt: ${q.options[q.correct[0]]}</div>
+          <div class="explanation-box text-xs">${q.explanation}</div>
+        </div>`;
+    }
+  });
+
+  document.getElementById('results-content').innerHTML = `
+    <div class="text-center mb-8">
+      <div class="mono text-xs font-bold mb-2" style="color:var(--muted)">DITT RESULTAT</div>
+      <div class="text-7xl font-extrabold mb-2" style="color:${gradeColor}">${score}</div>
+      <div class="mono text-sm mb-4" style="color:var(--muted)">av 43 poäng</div>
+      <div class="inline-block rounded-2xl px-8 py-3 text-2xl font-extrabold mb-2" style="background:${gradeColor}22;color:${gradeColor};border:2px solid ${gradeColor}">
+        BETYG ${grade}
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="rounded-xl p-4 text-center" style="background:var(--surface);border:2px solid var(--border)">
+        <div class="text-2xl font-extrabold" style="color:var(--success)">${answered}</div>
+        <div class="mono text-xs mt-1" style="color:var(--muted)">BESVARADE</div>
+      </div>
+      <div class="rounded-xl p-4 text-center" style="background:var(--surface);border:2px solid var(--border)">
+        <div class="text-2xl font-extrabold" style="color:var(--warn)">${skipped}</div>
+        <div class="mono text-xs mt-1" style="color:var(--muted)">HOPPADE</div>
+      </div>
+      <div class="rounded-xl p-4 text-center" style="background:var(--surface);border:2px solid var(--border)">
+        <div class="text-2xl font-extrabold" style="color:var(--accent)">${score}</div>
+        <div class="mono text-xs mt-1" style="color:var(--muted)">POÄNG</div>
+      </div>
+    </div>
+    ${reviewHtml ? `<div class="mono text-xs font-bold mb-4" style="color:var(--muted)">GENOMGÅNG AV FEL OCH HOPPADE</div>${reviewHtml}` : `<div class="rounded-xl p-6 text-center" style="background:#dcfce7;border:2px solid var(--success)"><div class="text-lg font-bold" style="color:var(--success)">🎉 Perfekt genomgång!</div></div>`}
+    <div class="flex gap-3 sm:gap-4 mt-8">
+      <button onclick="startExam()" class="btn-primary flex-1 py-4 rounded-xl font-bold">KÖR IGEN</button>
+      <button onclick="showStart()" class="btn-secondary flex-1 py-4 rounded-xl font-bold">STARTSIDA</button>
+    </div>
+  `;
+  wrapTables(document.getElementById('results-content'));
+}
+</script>
+</body>
+</html>
